@@ -1,0 +1,48 @@
+name: Forecast tests
+
+# Runs the Python tests on every pull request that touches the forecast or the database.
+# Needs no secrets and no network beyond installing the libraries: the tests use saved answers
+# from the weather service and a throwaway database.
+
+on:
+  pull_request:
+    paths:
+      - "forecast/**"
+      - "supabase/**"
+      - ".github/workflows/forecast-tests.yml"
+  push:
+    branches: [main]
+    paths:
+      - "forecast/**"
+      - "supabase/**"
+      - ".github/workflows/forecast-tests.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Python tests on saved samples and a throwaway database
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: forecast/requirements-dev.txt
+      - name: Install the libraries
+        run: pip install -r forecast/requirements-dev.txt
+      - name: Run the tests
+        env:
+          REQUIRE_LOCAL_POSTGRES: "1"
+        run: |
+          set -o pipefail
+          if python -m pytest forecast -q | tee pytest.out; then
+            echo "::notice title=Forecast tests::$(tail -1 pytest.out)"
+          else
+            echo "::error title=Forecast tests::$(tail -1 pytest.out)"
+            exit 1
+          fi

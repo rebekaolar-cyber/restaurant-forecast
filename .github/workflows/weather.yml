@@ -1,0 +1,56 @@
+name: Load weather
+
+# Loads two years of weather history and the 14-day forecast into daily_weather, then loads it
+# a second time and fails if the second run added a single row.
+#
+# Start it by hand: Actions > Load weather > Run workflow.
+# It also runs by itself when a pull request changes the weather code, as a real-life test.
+# That is fine for the test project. Remove the pull_request part before this ever points at a
+# project with real data.
+#
+# Uses the secret key from GitHub Secrets. The key is never printed.
+
+on:
+  workflow_dispatch:
+    inputs:
+      history_days:
+        description: "How many days back to load (731 = two years)"
+        default: "731"
+  pull_request:
+    paths:
+      - "forecast/weather.py"
+      - "forecast/db.py"
+      - "forecast/settings.py"
+      - "forecast/report.py"
+      - "forecast/requirements.txt"
+      - ".github/workflows/weather.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: weather-load
+  cancel-in-progress: false
+
+jobs:
+  load:
+    name: Load weather twice; the second run must add nothing
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+      HISTORY_DAYS: ${{ inputs.history_days || '731' }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: forecast/requirements.txt
+      - name: Install the libraries
+        run: pip install -r forecast/requirements.txt
+      - name: Load history and forecast
+        run: python -m forecast.weather --history-days "$HISTORY_DAYS"
+      - name: Load again; this run must not add a single row
+        run: python -m forecast.weather --history-days "$HISTORY_DAYS" --expect-unchanged
