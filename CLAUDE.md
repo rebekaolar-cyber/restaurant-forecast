@@ -28,6 +28,9 @@ Small commits on your own branch, and a pull request at the end of each stage.
 - 254 seats at 58 tables: indoors 120 seats at 30 tables, Binnentuin (courtyard garden)
   134 seats at 28 tables. The Binnentuin is usable all year.
 - Open every day, dinner only, so there is **one shift per day, called `dinner`**.
+  **Mondays only since 10 August 2026** (confirmed by Rebeka, 10 Oct 2026; TheFork shows it as the
+  service "Maandag vanaf 10 augustus"). Before that Mondays were closed: a closed evening is never
+  "0 guests". `forecast/opening.py` holds this; the fake history, forecast and backtest use it.
   Mon-Thu 17:00-23:00, Fri-Sat 17:00-01:00, Sun 16:00-23:00. Friday and Saturday run past
   midnight: everything until closing belongs to the day the shift started.
 - **Fixed crew** on every open day, whatever the forecast says: 4 kitchen staff from 14:00 and

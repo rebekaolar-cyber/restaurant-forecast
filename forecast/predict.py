@@ -20,6 +20,7 @@ from forecast import report
 from forecast.baseline import MODEL_NAME, WEEKS, Forecast, ForecastError, baseline_forecast
 from forecast.db import Database, DatabaseError, RestDatabase
 from forecast.history import History, load_history
+from forecast.opening import is_open
 from forecast.settings import SettingsError, load_settings
 from forecast.staffing import ROLES, StaffingError, load_bands, roster_text, staff_for
 
@@ -49,7 +50,10 @@ def forecast_rows(history: History, bands: list[dict], restaurant_id: str, as_of
     made_at = as_of.astimezone(timezone.utc).isoformat()
     rows = []
     for offset in range(HORIZON_DAYS):
-        forecast: Forecast = baseline_forecast(history, today + timedelta(days=offset), as_of)
+        day = today + timedelta(days=offset)
+        if not is_open(day):
+            continue   # no forecast for an evening the restaurant is closed
+        forecast: Forecast = baseline_forecast(history, day, as_of)
         rows.append(
             {
                 "restaurant_id": restaurant_id,

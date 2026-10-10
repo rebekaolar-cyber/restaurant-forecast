@@ -32,6 +32,7 @@ from forecast import fake_history, report
 from forecast.baseline import WEEKS, ForecastError, baseline_forecast
 from forecast.db import Database, DatabaseError, RestDatabase
 from forecast.history import History, load_history, local_moment
+from forecast.opening import is_open
 from forecast.manager_plan import GUESTS_BY_WEEKDAY, REAL_FRIDAY_GUESTS, planned_guests
 from forecast.settings import SettingsError, load_settings
 from forecast.staffing import StaffingError, load_bands, staff_for
@@ -75,10 +76,27 @@ def _floor_staff(guests: int, bands: list[dict]) -> int:
 
 def run_backtest(history: History, bands: list[dict], *, last_day: date, days: int = DAYS) -> dict:
     """Replays `days` evenings ending on last_day. Returns plain numbers, ready to save as JSON."""
-    evenings = [last_day - timedelta(days=n) for n in range(days - 1, -1, -1)]
-    missing = [day for day in evenings if history.guests(day) is None]
+    period = [last_day - timedelta(days=n) for n in range(days - 1, -1, -1)]
+    closed = [day for day in period if not is_open(day)]
+    missing = [day for day in period if is_open(day) and history.guests(day) is None]
     if missing:
         raise ForecastError(f"no receipts for {len(missing)} evening(s) in the period, first {missing[0]}")
+
+    # An evening is scored only if a forecast could be made at every distance. A weekday that has
+    # only just opened (Mondays from 10 August 2026) has too few earlier weeks at first.
+    def forecastable(day: date) -> bool:
+        try:
+            for days_ahead in HORIZONS:
+                baseline_forecast(history, day, local_moment(day - timedelta(days=days_ahead - 1), RUN_AT, history.tz))
+        except ForecastError:
+            return False
+        return True
+
+    open_evenings = [day for day in period if is_open(day)]
+    evenings = [day for day in open_evenings if forecastable(day)]
+    too_new = [day for day in open_evenings if day not in evenings]
+    if not evenings:
+        raise ForecastError("no evening in the period could be forecast")
 
     horizons = {}
     for days_ahead in HORIZONS:
@@ -119,9 +137,11 @@ def run_backtest(history: History, bands: list[dict], *, last_day: date, days: i
             }
 
     return {
-        "first_evening": evenings[0].isoformat(),
-        "last_evening": evenings[-1].isoformat(),
+        "first_evening": period[0].isoformat(),
+        "last_evening": period[-1].isoformat(),
         "evenings": len(evenings),
+        "evenings_closed": len(closed),
+        "evenings_too_new": len(too_new),
         "average_guests": round(sum(history.guests(day) for day in evenings) / len(evenings), 1),
         "horizons": horizons,
         "by_weekday": by_weekday,
@@ -154,8 +174,12 @@ def markdown_report(result: dict, *, source: str) -> str:
     out = [
         "# Baseline forecast: backtest against the manager's plan",
         "",
-        f"Period: {result['first_evening']} to {result['last_evening']}, {n} evenings, dinner shift. "
+        f"Period: {result['first_evening']} to {result['last_evening']}, {n} evenings scored, dinner shift. "
         f"Average {result['average_guests']} guests per evening.",
+        "",
+        f"Not scored: {result['evenings_closed']} evening(s) when the restaurant was closed (Mondays before "
+        f"10 August 2026) and {result['evenings_too_new']} Monday(s) right after it opened, when there were "
+        "not yet 3 earlier Mondays to average.",
         "",
         f"Data: {source}",
         "",

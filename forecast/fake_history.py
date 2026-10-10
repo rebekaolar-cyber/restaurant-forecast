@@ -3,6 +3,7 @@
 It fills `bookings` and `receipts` with made-up evenings that follow the real weather:
 
 - busier on Friday and Saturday, quiet weeks in January, public holidays
+- closed on Mondays before 10 August 2026, as the real restaurant was
 - fewer walk-ins on rainy days, more on warm dry evenings (the terrace effect)
 - bookings made 0 to 30 days ahead, about 5% no-shows
 - no names, phone numbers or emails: a party is a time, a size and a table
@@ -44,6 +45,7 @@ from forecast import report
 from forecast.calendar_nl import holiday_name, special_name
 from forecast.db import Database, DatabaseError, RestDatabase
 from forecast.history import parse_moment, service_date
+from forecast.opening import is_open
 from forecast.manager_plan import GUESTS_BY_WEEKDAY, REAL_FRIDAY_GUESTS
 from forecast.settings import SettingsError, load_settings
 
@@ -370,6 +372,8 @@ def rows_for_day(restaurant: dict, day: date, *, as_of: datetime, weather: dict 
     An evening that is over gets its final state: walk-ins, no-shows and receipts. That needs the
     day's measured weather. An evening that is still to come shows only the bookings made so far.
     """
+    if not is_open(day):
+        return [], []   # closed: nobody books, nobody comes
     restaurant_id = restaurant["id"]
     today = as_of.astimezone(ZoneInfo(restaurant["timezone"])).date()
     reserved = reserved_parties(restaurant, day)

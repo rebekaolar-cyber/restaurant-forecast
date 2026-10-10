@@ -11,6 +11,7 @@ import pytest
 
 from forecast import fake_history as fh
 from forecast.calendar_nl import is_ordinary
+from forecast.opening import is_open
 from forecast.history import parse_moment, service_date
 from forecast.manager_plan import REAL_FRIDAY_GUESTS, REAL_FRIDAY_RESERVATIONS
 from forecast.tests.conftest import HABIBI, SEEDED_RESTAURANT, measured_weather, put_weather
@@ -66,7 +67,20 @@ def test_rows_hold_only_the_contract_columns_and_nothing_personal(two_years):
 def test_two_years_of_evenings_every_one_with_guests(two_years):
     book, served = per_evening(*two_years)
     assert min(served) == date(2024, 10, 9) and max(served) == date(2026, 10, 9)
-    assert len(served) == 731 and min(served.values()) > 0
+    closed_mondays = sum(1 for n in range(731) if not is_open(date(2024, 10, 9) + timedelta(days=n)))
+    assert closed_mondays == 95
+    assert len(served) == 731 - closed_mondays and min(served.values()) > 0
+
+
+def test_closed_before_10_august_2026_on_mondays(two_years):
+    bookings, receipts = two_years
+    _, served = per_evening(bookings, receipts)
+    assert date(2026, 8, 3) not in served and date(2025, 4, 21) not in served   # a Monday, Easter Monday 2025
+    assert served[date(2026, 8, 10)] > 0                                         # the first Monday open
+    assert not any(
+        date.fromisoformat(b["visit_date"]).weekday() == 0 and date.fromisoformat(b["visit_date"]) < date(2026, 8, 10)
+        for b in bookings
+    )
 
 
 # ---- how busy ---------------------------------------------------------------------------------
@@ -101,9 +115,11 @@ def test_january_is_quiet(two_years):
 
 def test_public_holidays_are_busier_than_the_same_weekday(two_years):
     _, served = per_evening(*two_years)
-    ordinary_monday = mean(v for day, v in served.items() if day.weekday() == 0 and is_ordinary(day) and day.month != 1)
-    assert served[date(2025, 4, 21)] > 1.3 * ordinary_monday    # Easter Monday
-    assert served[date(2026, 5, 25)] > 1.3 * ordinary_monday    # Whit Monday
+    ordinary_thursday = mean(v for day, v in served.items() if day.weekday() == 3 and is_ordinary(day) and day.month != 1)
+    ordinary_sunday = mean(v for day, v in served.items() if day.weekday() == 6 and is_ordinary(day) and day.month != 1)
+    assert served[date(2025, 5, 29)] > 1.3 * ordinary_thursday   # Ascension Day 2025, a Thursday
+    # Easter Sunday, both years together (one evening on its own is too noisy to test).
+    assert (served[date(2025, 4, 20)] + served[date(2026, 4, 5)]) / 2 > 1.15 * ordinary_sunday
     assert served[date(2025, 12, 25)] > 1.5 * mean(
         v for day, v in served.items() if day.weekday() == 3 and is_ordinary(day) and day.month != 1
     )  # Christmas Day 2025 was a Thursday

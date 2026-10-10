@@ -106,3 +106,11 @@ def test_the_offline_restaurant_matches_the_seed(db):
     stored = db.select("restaurants", "id,name,timezone,seats", order="name")
     assert stored == [OFFLINE_RESTAURANT]
     assert {key: HABIBI[key] for key in OFFLINE_RESTAURANT} == OFFLINE_RESTAURANT
+
+
+def test_mondays_open_only_from_10_august_2026():
+    from forecast.opening import is_open
+
+    assert not is_open(date(2026, 8, 3)) and is_open(date(2026, 8, 10)) and is_open(date(2026, 10, 12))
+    assert all(is_open(date(2025, 6, day)) for day in (3, 4, 5, 6, 7, 8))   # Tuesday to Sunday
+    assert not is_open(date(2025, 6, 2))                                    # a Monday in 2025

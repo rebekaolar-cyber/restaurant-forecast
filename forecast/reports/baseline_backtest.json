@@ -1,30 +1,32 @@
 {
   "first_evening": "2026-07-10",
   "last_evening": "2026-10-09",
-  "evenings": 92,
-  "average_guests": 115.8,
+  "evenings": 84,
+  "evenings_closed": 4,
+  "evenings_too_new": 4,
+  "average_guests": 119.8,
   "horizons": {
     "1": {
       "forecast": {
-        "average_error": 13.1,
-        "leaning": -0.5
+        "average_error": 13.0,
+        "leaning": -0.7
       },
       "weekday_average": {
-        "average_error": 14.4,
-        "leaning": 0.4
+        "average_error": 14.5,
+        "leaning": 0.0
       },
       "manager_plan": {
-        "average_error": 49.7,
-        "leaning": 49.5
+        "average_error": 51.9,
+        "leaning": 51.7
       },
       "manager_plan_scaled": {
-        "average_error": 13.8,
-        "leaning": -0.5
+        "average_error": 13.9,
+        "leaning": -0.2
       },
-      "evenings_forecast_closer_than_plan": 84,
+      "evenings_forecast_closer_than_plan": 78,
       "staffing": {
-        "forecast_right": 83,
-        "plan_right": 39,
+        "forecast_right": 75,
+        "plan_right": 31,
         "forecast_extra": 14,
         "forecast_short": 17,
         "plan_extra": 194,
@@ -33,25 +35,25 @@
     },
     "3": {
       "forecast": {
-        "average_error": 14.8,
-        "leaning": 0.1
+        "average_error": 14.7,
+        "leaning": -0.1
       },
       "weekday_average": {
-        "average_error": 14.4,
-        "leaning": 0.4
+        "average_error": 14.5,
+        "leaning": 0.0
       },
       "manager_plan": {
-        "average_error": 49.7,
-        "leaning": 49.5
+        "average_error": 51.9,
+        "leaning": 51.7
       },
       "manager_plan_scaled": {
-        "average_error": 13.8,
-        "leaning": -0.5
+        "average_error": 13.9,
+        "leaning": -0.2
       },
-      "evenings_forecast_closer_than_plan": 83,
+      "evenings_forecast_closer_than_plan": 77,
       "staffing": {
-        "forecast_right": 78,
-        "plan_right": 39,
+        "forecast_right": 70,
+        "plan_right": 31,
         "forecast_extra": 21,
         "forecast_short": 27,
         "plan_extra": 194,
@@ -60,25 +62,25 @@
     },
     "7": {
       "forecast": {
-        "average_error": 16.0,
-        "leaning": 0.2
+        "average_error": 15.8,
+        "leaning": -0.0
       },
       "weekday_average": {
-        "average_error": 14.4,
-        "leaning": 0.4
+        "average_error": 14.5,
+        "leaning": 0.0
       },
       "manager_plan": {
-        "average_error": 49.7,
-        "leaning": 49.5
+        "average_error": 51.9,
+        "leaning": 51.7
       },
       "manager_plan_scaled": {
-        "average_error": 13.8,
-        "leaning": -0.5
+        "average_error": 13.9,
+        "leaning": -0.2
       },
-      "evenings_forecast_closer_than_plan": 83,
+      "evenings_forecast_closer_than_plan": 77,
       "staffing": {
-        "forecast_right": 82,
-        "plan_right": 39,
+        "forecast_right": 74,
+        "plan_right": 31,
         "forecast_extra": 14,
         "forecast_short": 20,
         "plan_extra": 194,
@@ -87,25 +89,25 @@
     },
     "14": {
       "forecast": {
-        "average_error": 16.5,
-        "leaning": -0.4
+        "average_error": 16.8,
+        "leaning": -1.2
       },
       "weekday_average": {
         "average_error": 14.5,
-        "leaning": 0.7
+        "leaning": 0.0
       },
       "manager_plan": {
-        "average_error": 49.7,
-        "leaning": 49.5
+        "average_error": 51.9,
+        "leaning": 51.7
       },
       "manager_plan_scaled": {
-        "average_error": 13.8,
-        "leaning": -0.5
+        "average_error": 13.9,
+        "leaning": -0.2
       },
-      "evenings_forecast_closer_than_plan": 81,
+      "evenings_forecast_closer_than_plan": 74,
       "staffing": {
-        "forecast_right": 73,
-        "plan_right": 39,
+        "forecast_right": 65,
+        "plan_right": 31,
         "forecast_extra": 27,
         "forecast_short": 37,
         "plan_extra": 194,
@@ -115,8 +117,8 @@
   },
   "by_weekday": {
     "Monday": {
-      "evenings": 13,
-      "average_guests": 75.6,
+      "evenings": 5,
+      "average_guests": 78.4,
       "manager_plan": 100
     },
     "Tuesday": {
@@ -153,115 +155,115 @@
   "earlier_period": {
     "first_evening": "2024-12-04",
     "last_evening": "2026-07-09",
-    "evenings": 583,
-    "average_guests": 110.2,
+    "evenings": 500,
+    "average_guests": 116.8,
     "horizons": {
       "1": {
         "forecast": {
-          "average_error": 13.4,
+          "average_error": 13.3,
           "leaning": -0.4
         },
         "weekday_average": {
-          "average_error": 19.6,
+          "average_error": 19.7,
           "leaning": -0.4
         },
         "manager_plan": {
-          "average_error": 55.8,
-          "leaning": 53.9
+          "average_error": 59.0,
+          "leaning": 58.0
         },
         "manager_plan_scaled": {
-          "average_error": 18.7,
-          "leaning": 4.3
+          "average_error": 18.9,
+          "leaning": 5.0
         },
-        "evenings_forecast_closer_than_plan": 532,
+        "evenings_forecast_closer_than_plan": 460,
         "staffing": {
-          "forecast_right": 514,
-          "plan_right": 259,
+          "forecast_right": 436,
+          "plan_right": 181,
           "forecast_extra": 107,
-          "forecast_short": 136,
+          "forecast_short": 113,
           "plan_extra": 1346,
-          "plan_short": 27
+          "plan_short": 4
         }
       },
       "3": {
         "forecast": {
-          "average_error": 15.4,
+          "average_error": 15.3,
           "leaning": -0.4
         },
         "weekday_average": {
-          "average_error": 19.6,
+          "average_error": 19.7,
           "leaning": -0.4
         },
         "manager_plan": {
-          "average_error": 55.8,
-          "leaning": 53.9
+          "average_error": 59.0,
+          "leaning": 58.0
         },
         "manager_plan_scaled": {
-          "average_error": 18.7,
-          "leaning": 4.3
+          "average_error": 18.9,
+          "leaning": 5.0
         },
-        "evenings_forecast_closer_than_plan": 525,
+        "evenings_forecast_closer_than_plan": 456,
         "staffing": {
-          "forecast_right": 495,
-          "plan_right": 259,
+          "forecast_right": 417,
+          "plan_right": 181,
           "forecast_extra": 144,
-          "forecast_short": 162,
+          "forecast_short": 139,
           "plan_extra": 1346,
-          "plan_short": 27
+          "plan_short": 4
         }
       },
       "7": {
         "forecast": {
-          "average_error": 17.2,
-          "leaning": -0.4
+          "average_error": 17.3,
+          "leaning": -0.5
         },
         "weekday_average": {
-          "average_error": 19.6,
+          "average_error": 19.7,
           "leaning": -0.4
         },
         "manager_plan": {
-          "average_error": 55.8,
-          "leaning": 53.9
+          "average_error": 59.0,
+          "leaning": 58.0
         },
         "manager_plan_scaled": {
-          "average_error": 18.7,
-          "leaning": 4.3
+          "average_error": 18.9,
+          "leaning": 5.0
         },
-        "evenings_forecast_closer_than_plan": 514,
+        "evenings_forecast_closer_than_plan": 446,
         "staffing": {
-          "forecast_right": 493,
-          "plan_right": 259,
+          "forecast_right": 415,
+          "plan_right": 181,
           "forecast_extra": 148,
-          "forecast_short": 162,
+          "forecast_short": 139,
           "plan_extra": 1346,
-          "plan_short": 27
+          "plan_short": 4
         }
       },
       "14": {
         "forecast": {
-          "average_error": 19.1,
+          "average_error": 19.5,
           "leaning": -0.4
         },
         "weekday_average": {
-          "average_error": 20.2,
-          "leaning": -0.5
+          "average_error": 20.4,
+          "leaning": -0.6
         },
         "manager_plan": {
-          "average_error": 55.8,
-          "leaning": 53.9
+          "average_error": 59.0,
+          "leaning": 58.0
         },
         "manager_plan_scaled": {
-          "average_error": 18.7,
-          "leaning": 4.3
+          "average_error": 18.9,
+          "leaning": 5.0
         },
-        "evenings_forecast_closer_than_plan": 515,
+        "evenings_forecast_closer_than_plan": 444,
         "staffing": {
-          "forecast_right": 473,
-          "plan_right": 259,
+          "forecast_right": 395,
+          "plan_right": 181,
           "forecast_extra": 177,
-          "forecast_short": 212,
+          "forecast_short": 189,
           "plan_extra": 1346,
-          "plan_short": 27
+          "plan_short": 4
         }
       }
     }

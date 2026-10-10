@@ -81,7 +81,9 @@ def test_the_saved_report_is_what_the_code_produces_today():
     result = bt.run_backtest(history, bt.OFFLINE_BANDS, last_day=LAST_DAY)
     saved = json.loads((REPORTS / "baseline_backtest.json").read_text(encoding="utf-8"))
     assert {key: saved[key] for key in result} == result
-    assert saved["evenings"] == 92 and saved["first_evening"] == "2026-07-10"
+    assert saved["first_evening"] == "2026-07-10" and saved["last_evening"] == "2026-10-09"
+    # 92 evenings, minus 4 closed Mondays before 10 August and 4 Mondays with too few earlier Mondays.
+    assert (saved["evenings"], saved["evenings_closed"], saved["evenings_too_new"]) == (84, 4, 4)
     text = (REPORTS / "baseline_backtest.md").read_text(encoding="utf-8")
     for days_ahead, scores in result["horizons"].items():
         assert f"| {days_ahead} | {scores['forecast']['average_error']} | {scores['weekday_average']['average_error']} |" in text

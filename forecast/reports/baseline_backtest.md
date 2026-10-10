@@ -1,6 +1,8 @@
 # Baseline forecast: backtest against the manager's plan
 
-Period: 2026-07-10 to 2026-10-09, 92 evenings, dinner shift. Average 115.8 guests per evening.
+Period: 2026-07-10 to 2026-10-09, 84 evenings scored, dinner shift. Average 119.8 guests per evening.
+
+Not scored: 4 evening(s) when the restaurant was closed (Mondays before 10 August 2026) and 4 Monday(s) right after it opened, when there were not yet 3 earlier Mondays to average.
 
 Data: fake history rebuilt from the saved weather file `daily_weather_2024-10-09_to_2026-10-23.csv` with seed 20261010, as of 2026-10-10 03:00 Amsterdam time.
 
@@ -12,10 +14,10 @@ Lower is better. "Days ahead" counts as the nightly job writes it: day 1 is the 
 
 | Days ahead | Our forecast | Weekday average alone | Manager's plan | Manager's plan x 0.70 |
 |---|---|---|---|---|
-| 1 | 13.1 | 14.4 | 49.7 | 13.8 |
-| 3 | 14.8 | 14.4 | 49.7 | 13.8 |
-| 7 | 16.0 | 14.4 | 49.7 | 13.8 |
-| 14 | 16.5 | 14.5 | 49.7 | 13.8 |
+| 1 | 13.0 | 14.5 | 51.9 | 13.9 |
+| 3 | 14.7 | 14.5 | 51.9 | 13.9 |
+| 7 | 15.8 | 14.5 | 51.9 | 13.9 |
+| 14 | 16.8 | 14.5 | 51.9 | 13.9 |
 
 - **Our forecast**: the average of the same weekday over the last 6 weeks, corrected by how the bookings already made compare with what is normal that many days ahead.
 - **Weekday average alone**: the same without looking at the bookings. The difference between these two columns is what the reservation book adds.
@@ -30,7 +32,7 @@ The fake history was built about 30% below his plan on every weekday, because th
 
 | Weekday | Evenings | Average guests (fake) | Manager's plan |
 |---|---|---|---|
-| Monday | 13 | 75.6 | 100 |
+| Monday | 5 | 78.4 | 100 |
 | Tuesday | 13 | 76.1 | 100 |
 | Wednesday | 13 | 77.9 | 100 |
 | Thursday | 13 | 81.6 | 120 |
@@ -40,14 +42,14 @@ The fake history was built about 30% below his plan on every weekday, because th
 
 ## A longer look: the months before
 
-The same comparison for 2024-12-04 to 2026-07-09 (583 evenings, average 110.2 guests). Three summer months are a small sample without a single public holiday. This longer period has Christmas, Easter and the quiet January weeks in it, which is where the reservation book earns its place.
+The same comparison for 2024-12-04 to 2026-07-09 (500 evenings, average 116.8 guests). Three summer months are a small sample without a single public holiday. This longer period has Christmas, Easter and the quiet January weeks in it, which is where the reservation book earns its place.
 
 | Days ahead | Our forecast | Weekday average alone | Manager's plan | Manager's plan x 0.70 |
 |---|---|---|---|---|
-| 1 | 13.4 | 19.6 | 55.8 | 18.7 |
-| 3 | 15.4 | 19.6 | 55.8 | 18.7 |
-| 7 | 17.2 | 19.6 | 55.8 | 18.7 |
-| 14 | 19.1 | 20.2 | 55.8 | 18.7 |
+| 1 | 13.3 | 19.7 | 59.0 | 18.9 |
+| 3 | 15.3 | 19.7 | 59.0 | 18.9 |
+| 7 | 17.3 | 19.7 | 59.0 | 18.9 |
+| 14 | 19.5 | 20.4 | 59.0 | 18.9 |
 
 ## What it means for the roster
 
@@ -55,6 +57,6 @@ Floor, bar, runner and food staff together, from the manager's own table, for th
 
 | | Our forecast | Manager's plan |
 |---|---|---|
-| Evenings with the right roster | 82 of 92 | 39 of 92 |
+| Evenings with the right roster | 74 of 84 | 31 of 84 |
 | Staff rostered beyond what was needed (person-evenings) | 14 | 194 |
 | Staff short of what was needed (person-evenings) | 20 | 0 |
