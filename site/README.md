@@ -19,6 +19,7 @@ npm run dev        # the site at http://localhost:4321, reloads as you edit
 npm run build      # builds the real thing into site/dist
 npm run preview    # serves site/dist, exactly what Cloudflare will serve
 npm run check      # type check
+npm test           # unit tests for the dashboard's date and save logic
 ```
 
 ## Where to change things
@@ -53,7 +54,7 @@ on the test address.
 |---|---|
 | `/login/` | Log in with e-mail and password. Also "Wachtwoord vergeten?". There is no sign-up: accounts exist only by invitation. |
 | `/login/nieuw-wachtwoord/` | Where an invitation or reset e-mail leads: choose a password. |
-| `/dashboard/` | The manager's screen. Sends anyone who is not logged in to `/login/`. |
+| `/dashboard/` | The manager's screen: the next 14 days. Sends anyone who is not logged in to `/login/`. |
 
 How the lock works, in plain words:
 
@@ -80,6 +81,52 @@ Settings this needs in Supabase (Authentication):
   people back to that address.
 - A person can use the dashboard once they are invited **and** have a row in
   `restaurant_members`.
+
+## The dashboard
+
+One screen with the next 14 days. Per day: expected guests (number and bar),
+recommended service and kitchen staff, and the weather. Choosing a day opens
+it: the manager can set their own staff numbers and write a note.
+
+What it reads and writes (names are the shared contract):
+
+| Table | Use |
+|---|---|
+| `restaurants` | read: id, name, timezone of the restaurant this login belongs to |
+| `forecasts` | read: guests, servers, cooks, model, created_at |
+| `daily_weather` | read |
+| `forecast_overrides` | read, upsert on `restaurant_id, date, shift`, delete |
+
+How an override is stored:
+
+- Only `restaurant_id, date, shift, servers, cooks, note` are sent. The
+  database records who changed it and when.
+- A number equal to the forecast's is sent as empty, which means "keep the
+  forecast's number". Only a number the manager really changed is pinned.
+- Numbers back at the forecast and no note: the row is deleted.
+- The line then shows the manager's number in a black box with
+  "prognose N" under it, and the note.
+
+Things it decides on its own:
+
+- "Today" is the day the evening started, until 04:00 at night, in the
+  restaurant's own timezone.
+- A day without a forecast still gets a line ("Geen prognose").
+- "Prognose bijgewerkt ..." is the newest `created_at` on screen. Older than
+  36 hours gives a warning that the nightly run probably failed.
+- Rows with `model = 'placeholder'` are flagged as example figures.
+- The note is shown as plain text, never as HTML.
+
+Where the code is:
+
+| File | What |
+|---|---|
+| `src/lib/forecast-days.ts` | the logic: which days, which number counts, what to save (tested in `forecast-days.test.ts`) |
+| `src/lib/dashboard-data.ts` | every database call |
+| `src/scripts/dashboard.ts` | checks the login before anything is shown or fetched |
+| `src/scripts/dashboard-view.ts` | draws the list and the edit panel |
+| `src/styles/dashboard.css` | the look |
+| `src/content/nl.staff.ts` | every Dutch sentence |
 
 ## Privacy rules this site keeps
 

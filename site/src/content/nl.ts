@@ -163,6 +163,7 @@ export const nl = {
         paragraphs: [
           'Medewerkers met een uitnodiging kunnen inloggen op een afgeschermd dashboard. Daarvoor bewaren wij hun e-mailadres en een versleuteld wachtwoord bij onze databaseleverancier Supabase, op servers in de Europese Unie (Frankfurt). Alleen de inlogpagina en het dashboard maken verbinding met Supabase, de openbare pagina’s niet.',
           'Na het inloggen bewaart de browser een inlogsleutel op het eigen apparaat, zodat de medewerker ingelogd blijft. Die sleutel is alleen voor het inloggen en wordt niet gebruikt om iemand te volgen. Met “Uitloggen” wordt hij verwijderd.',
+          'Past een medewerker in het dashboard de bezetting aan, dan bewaren wij welk account dat deed en wanneer. In een notitie horen geen namen of telefoonnummers.',
         ],
       },
       {
