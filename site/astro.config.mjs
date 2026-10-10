@@ -1,4 +1,12 @@
 import { defineConfig } from 'astro/config';
+import { loadEnv } from 'vite';
+import { looksSecret, SECRET_KEY_MESSAGE } from './src/lib/key-guard.mjs';
+
+// Safety catch: everything named PUBLIC_ ends up in the files visitors
+// download. If someone ever pastes the SECRET Supabase key into that variable,
+// stop the build instead of publishing it.
+const env = { ...loadEnv(process.env.NODE_ENV ?? 'production', process.cwd(), 'PUBLIC_'), ...process.env };
+if (looksSecret(env.PUBLIC_SUPABASE_PUBLISHABLE_KEY)) throw new Error(SECRET_KEY_MESSAGE);
 
 // Static site: every page is plain HTML built ahead of time, so Cloudflare
 // Pages only has to serve files. No server code runs for visitors.
