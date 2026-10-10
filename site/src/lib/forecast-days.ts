@@ -14,6 +14,19 @@ export const MAX_STAFF = 99;
 export const NOTE_MAX = 300;
 const FALLBACK_TIMEZONE = 'Europe/Amsterdam';
 
+// ---------- The roster ----------
+
+/**
+ * The roles on the manager's roster, in roster order: W, B, R, F.
+ * The names are the column names in `forecasts` and `forecast_overrides`.
+ * The kitchen (`cooks`) is not here: it is a fixed crew, shown but never
+ * overridden from the dashboard.
+ */
+export const ROLES = ['servers', 'bar_staff', 'runners', 'food_staff'] as const;
+export type Role = (typeof ROLES)[number];
+/** What a database from before the bar, runner and food columns can offer. */
+export const ROLES_BEFORE_ROSTER_COLUMNS: readonly Role[] = ['servers'];
+
 // ---------- Rows as the database gives them (names are the shared contract) ----------
 
 export type Restaurant = { id: string; name: string; timezone: string };
@@ -23,6 +36,10 @@ export type ForecastRow = {
   shift: string;
   predicted_guests: number;
   servers: number;
+  bar_staff?: number | null;
+  runners?: number | null;
+  food_staff?: number | null;
+  /** Kitchen: a fixed crew. */
   cooks: number;
   model: string;
   created_at: string;
@@ -41,9 +58,19 @@ export type OverrideRow = {
   date: string;
   shift: string;
   servers: number | null;
-  cooks: number | null;
+  bar_staff?: number | null;
+  runners?: number | null;
+  food_staff?: number | null;
   note: string | null;
   updated_at: string;
+};
+
+/** One role on one day: the number that counts and where it came from. */
+export type StaffCell = {
+  /** The manager's number if set, otherwise the forecast's. */
+  value: number | null;
+  forecast: number | null;
+  overridden: boolean;
 };
 
 /** One line on the dashboard: a day and a shift, with everything known about it. */
@@ -57,11 +84,9 @@ export type DayShift = {
   forecast: ForecastRow | null;
   weather: WeatherRow | null;
   override: OverrideRow | null;
-  /** The number that counts: the manager's if set, otherwise the forecast's. */
-  servers: number | null;
-  cooks: number | null;
-  serversOverridden: boolean;
-  cooksOverridden: boolean;
+  staff: Record<Role, StaffCell>;
+  /** Kitchen crew from the forecast. Fixed: the dashboard never overrides it. */
+  kitchen: number | null;
 };
 
 // ---------- Dates ----------
@@ -201,8 +226,16 @@ function merge(
   weather: WeatherRow | null,
   override: OverrideRow | null,
 ): DayShift {
-  const servers = override?.servers ?? forecast?.servers ?? null;
-  const cooks = override?.cooks ?? forecast?.cooks ?? null;
+  const staff = {} as Record<Role, StaffCell>;
+  for (const role of ROLES) {
+    const fromForecast = forecast?.[role] ?? null;
+    const fromManager = override?.[role] ?? null;
+    staff[role] = {
+      value: fromManager ?? fromForecast,
+      forecast: fromForecast,
+      overridden: fromManager != null,
+    };
+  }
   return {
     key: `${date}|${shift}`,
     date,
@@ -212,10 +245,8 @@ function merge(
     forecast,
     weather,
     override,
-    servers,
-    cooks,
-    serversOverridden: override?.servers != null,
-    cooksOverridden: override?.cooks != null,
+    staff,
+    kitchen: forecast?.cooks ?? null,
   };
 }
 
@@ -257,6 +288,15 @@ export function buildDays(
   return lines;
 }
 
+/**
+ * The kitchen crew when it is the same on every day shown (the fixed crew),
+ * or null when days differ or nothing is known.
+ */
+export function fixedKitchen(days: DayShift[]): number | null {
+  const sizes = new Set(days.flatMap((d) => (d.kitchen == null ? [] : [d.kitchen])));
+  return sizes.size === 1 ? [...sizes][0]! : null;
+}
+
 /** Top of the guests scale: the busiest evening shown, rounded up to a round number. */
 export function guestScale(days: DayShift[]): number {
   const most = Math.max(0, ...days.map((d) => d.forecast?.predicted_guests ?? 0));
@@ -277,25 +317,36 @@ export function readStaff(text: string): StaffInput {
   return { ok: true, value: Number(trimmed) };
 }
 
-export type OverrideDraft = { servers: number | null; cooks: number | null; note: string };
+export type StaffNumbers = Partial<Record<Role, number | null>>;
+export type OverrideDraft = { staff: StaffNumbers; note: string };
 
 export type OverrideAction =
   | { kind: 'remove' }
-  | { kind: 'save'; servers: number | null; cooks: number | null; note: string | null };
+  | { kind: 'save'; staff: StaffNumbers; note: string | null };
 
 /**
- * What to do with the manager's input.
+ * What to do with the manager's input, for the roles the database knows.
  * - A number equal to the forecast's is stored as "empty", which the database
  *   reads as "keep the forecast's number". Tomorrow's forecast can then move
  *   it again; only a number the manager really changed is pinned.
  * - Nothing changed and no note: there is no override, so remove the row.
  */
-export function overrideAction(draft: OverrideDraft, forecast: ForecastRow | null): OverrideAction {
-  const servers = draft.servers === forecast?.servers ? null : draft.servers;
-  const cooks = draft.cooks === forecast?.cooks ? null : draft.cooks;
+export function overrideAction(
+  draft: OverrideDraft,
+  forecast: ForecastRow | null,
+  roles: readonly Role[] = ROLES,
+): OverrideAction {
+  const staff: StaffNumbers = {};
+  let pinned = false;
+  for (const role of roles) {
+    const typed = draft.staff[role] ?? null;
+    const changed = typed !== null && typed !== (forecast?.[role] ?? null);
+    staff[role] = changed ? typed : null;
+    pinned ||= changed;
+  }
   const note = draft.note.trim().slice(0, NOTE_MAX) || null;
-  if (servers === null && cooks === null && note === null) return { kind: 'remove' };
-  return { kind: 'save', servers, cooks, note };
+  if (!pinned && note === null) return { kind: 'remove' };
+  return { kind: 'save', staff, note };
 }
 
 // ---------- Weather in words ----------

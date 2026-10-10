@@ -6,12 +6,15 @@ import {
   buildDays,
   dayLabel,
   firstDayShown,
+  fixedKitchen,
   guestScale,
   isStale,
   lastUpdated,
   overrideAction,
   rainText,
   readStaff,
+  ROLES,
+  ROLES_BEFORE_ROSTER_COLUMNS,
   serviceDay,
   temperatureText,
   whenAtRestaurant,
@@ -21,14 +24,36 @@ import {
 } from './forecast-days.ts';
 
 const TZ = 'Europe/Amsterdam';
-const forecast = (date: string, guests: number, servers: number, cooks: number): ForecastRow => ({
+// A forecast row with the roster roles: W servers, B bar, R runners, F food. Kitchen is 4.
+const forecast = (
+  date: string,
+  guests: number,
+  servers: number,
+  bar_staff = 2,
+  runners = 3,
+  food_staff = 1,
+): ForecastRow => ({
   date,
   shift: 'dinner',
   predicted_guests: guests,
   servers,
-  cooks,
+  bar_staff,
+  runners,
+  food_staff,
+  cooks: 4,
   model: 'placeholder',
   created_at: '2026-10-10T00:52:19.730666+00:00',
+});
+const override = (date: string, values: Partial<OverrideRow>): OverrideRow => ({
+  date,
+  shift: 'dinner',
+  servers: null,
+  bar_staff: null,
+  runners: null,
+  food_staff: null,
+  note: null,
+  updated_at: '2026-10-09T19:14:00Z',
+  ...values,
 });
 
 test('service day: the evening belongs to the day it started', () => {
@@ -74,7 +99,7 @@ test('dates: adding days crosses months, years and the clock change', () => {
 });
 
 test('fourteen days are always shown, also where a forecast is missing', () => {
-  const rows = [forecast('2026-10-10', 190, 10, 7), forecast('2026-10-12', 70, 4, 4)];
+  const rows = [forecast('2026-10-10', 300, 10), forecast('2026-10-12', 100, 4)];
   const days = buildDays('2026-10-10', rows, [], []);
   assert.equal(days.length, 14);
   assert.equal(days[0]?.date, '2026-10-10');
@@ -82,34 +107,62 @@ test('fourteen days are always shown, also where a forecast is missing', () => {
   assert.equal(days[0]?.isToday, true);
   assert.equal(days[1]?.isToday, false);
   assert.equal(days[1]?.forecast, null);
-  assert.equal(days[1]?.servers, null);
-  assert.equal(days[2]?.forecast?.predicted_guests, 70);
+  assert.equal(days[1]?.staff.servers.value, null);
+  assert.equal(days[1]?.kitchen, null);
+  assert.equal(days[2]?.forecast?.predicted_guests, 100);
   // Mondays start a week, but never the first line.
   assert.deepEqual(days.filter((d) => d.startsWeek).map((d) => d.date), ['2026-10-12', '2026-10-19']);
   assert.equal(buildDays('2026-10-12', rows, [], [])[0]?.startsWeek, false);
 });
 
 test('rows outside the fourteen days are ignored', () => {
-  const days = buildDays('2026-10-10', [forecast('2026-10-09', 999, 9, 9), forecast('2026-10-24', 999, 9, 9)], [], []);
+  const days = buildDays('2026-10-10', [forecast('2026-10-09', 999, 9), forecast('2026-10-24', 999, 9)], [], []);
   assert.ok(days.every((d) => d.forecast === null));
 });
 
+test('the four roster roles come out in roster order: W, B, R, F', () => {
+  assert.deepEqual([...ROLES], ['servers', 'bar_staff', 'runners', 'food_staff']);
+  const day = buildDays('2026-10-10', [forecast('2026-10-10', 300, 11, 3, 4, 2)], [], [])[0]!;
+  assert.deepEqual(
+    ROLES.map((role) => day.staff[role].value),
+    [11, 3, 4, 2],
+  );
+  assert.ok(ROLES.every((role) => !day.staff[role].overridden));
+});
+
 test('the manager\'s number wins, per role, and the forecast stays visible', () => {
-  const override: OverrideRow = { date: '2026-10-10', shift: 'dinner', servers: 12, cooks: null, note: 'Feest', updated_at: '2026-10-09T19:14:00Z' };
-  const day = buildDays('2026-10-10', [forecast('2026-10-10', 190, 10, 7)], [], [override])[0]!;
-  assert.equal(day.servers, 12);
-  assert.equal(day.serversOverridden, true);
-  assert.equal(day.forecast?.servers, 10);
-  assert.equal(day.cooks, 7);
-  assert.equal(day.cooksOverridden, false);
+  const mine = override('2026-10-10', { servers: 12, runners: 5, note: 'Feest' });
+  const day = buildDays('2026-10-10', [forecast('2026-10-10', 300, 10, 3, 4, 2)], [], [mine])[0]!;
+  assert.deepEqual(day.staff.servers, { value: 12, forecast: 10, overridden: true });
+  assert.deepEqual(day.staff.bar_staff, { value: 3, forecast: 3, overridden: false });
+  assert.deepEqual(day.staff.runners, { value: 5, forecast: 4, overridden: true });
+  assert.deepEqual(day.staff.food_staff, { value: 2, forecast: 2, overridden: false });
   assert.equal(day.override?.note, 'Feest');
 });
 
 test('an override of zero staff is a real number, not "empty"', () => {
-  const override: OverrideRow = { date: '2026-10-10', shift: 'dinner', servers: 0, cooks: null, note: null, updated_at: '2026-10-09T19:14:00Z' };
-  const day = buildDays('2026-10-10', [forecast('2026-10-10', 190, 10, 7)], [], [override])[0]!;
-  assert.equal(day.servers, 0);
-  assert.equal(day.serversOverridden, true);
+  const day = buildDays('2026-10-10', [forecast('2026-10-10', 300, 10)], [], [override('2026-10-10', { bar_staff: 0 })])[0]!;
+  assert.deepEqual(day.staff.bar_staff, { value: 0, forecast: 2, overridden: true });
+});
+
+test('the kitchen is the forecast\'s fixed crew and is never overridden', () => {
+  const days = buildDays('2026-10-10', [forecast('2026-10-10', 300, 10), forecast('2026-10-11', 180, 7)], [], []);
+  assert.equal(days[0]?.kitchen, 4);
+  assert.equal(fixedKitchen(days), 4);
+  // Different sizes on different days: there is no single fixed number to announce.
+  const mixed = buildDays('2026-10-10', [forecast('2026-10-10', 300, 10), { ...forecast('2026-10-11', 180, 7), cooks: 6 }], [], []);
+  assert.equal(fixedKitchen(mixed), null);
+  assert.equal(fixedKitchen(buildDays('2026-10-10', [], [], [])), null);
+});
+
+test('a database without the bar, runner and food columns still works', () => {
+  const old = { date: '2026-10-10', shift: 'dinner', predicted_guests: 190, servers: 10, cooks: 7, model: 'placeholder', created_at: '2026-10-10T00:52:19Z' };
+  const day = buildDays('2026-10-10', [old], [], [])[0]!;
+  assert.equal(day.staff.servers.value, 10);
+  assert.equal(day.staff.bar_staff.value, null);
+  assert.equal(day.kitchen, 7);
+  // Only the roles the database knows are sent.
+  assert.deepEqual(overrideAction({ staff: { servers: 12 }, note: '' }, old, ROLES_BEFORE_ROSTER_COLUMNS), { kind: 'save', staff: { servers: 12 }, note: null });
 });
 
 test('weather is matched by date', () => {
@@ -120,25 +173,27 @@ test('weather is matched by date', () => {
 });
 
 test('saving: only a changed number is pinned', () => {
-  const f = forecast('2026-10-10', 190, 10, 7);
-  assert.deepEqual(overrideAction({ servers: 12, cooks: 7, note: '' }, f), { kind: 'save', servers: 12, cooks: null, note: null });
-  assert.deepEqual(overrideAction({ servers: 10, cooks: 5, note: '  Rustig  ' }, f), { kind: 'save', servers: null, cooks: 5, note: 'Rustig' });
+  const f = forecast('2026-10-10', 300, 10, 3, 4, 2);
+  const typed = { servers: 10, bar_staff: 3, runners: 4, food_staff: 2 };
+  const empty = { servers: null, bar_staff: null, runners: null, food_staff: null };
+  assert.deepEqual(overrideAction({ staff: { ...typed, servers: 12 }, note: '' }, f), { kind: 'save', staff: { ...empty, servers: 12 }, note: null });
+  assert.deepEqual(overrideAction({ staff: { ...typed, bar_staff: 4, food_staff: 1 }, note: '  Rustig  ' }, f), { kind: 'save', staff: { ...empty, bar_staff: 4, food_staff: 1 }, note: 'Rustig' });
   // A note alone is worth keeping.
-  assert.deepEqual(overrideAction({ servers: 10, cooks: 7, note: 'Voetbal op tv' }, f), { kind: 'save', servers: null, cooks: null, note: 'Voetbal op tv' });
+  assert.deepEqual(overrideAction({ staff: typed, note: 'Voetbal op tv' }, f), { kind: 'save', staff: empty, note: 'Voetbal op tv' });
   // Zero is a number.
-  assert.deepEqual(overrideAction({ servers: 0, cooks: null, note: '' }, f), { kind: 'save', servers: 0, cooks: null, note: null });
+  assert.deepEqual(overrideAction({ staff: { ...typed, runners: 0 }, note: '' }, f), { kind: 'save', staff: { ...empty, runners: 0 }, note: null });
 });
 
 test('saving: nothing changed means there is no override', () => {
-  const f = forecast('2026-10-10', 190, 10, 7);
-  assert.deepEqual(overrideAction({ servers: 10, cooks: 7, note: '   ' }, f), { kind: 'remove' });
-  assert.deepEqual(overrideAction({ servers: null, cooks: null, note: '' }, f), { kind: 'remove' });
+  const f = forecast('2026-10-10', 300, 10, 3, 4, 2);
+  assert.deepEqual(overrideAction({ staff: { servers: 10, bar_staff: 3, runners: 4, food_staff: 2 }, note: '   ' }, f), { kind: 'remove' });
+  assert.deepEqual(overrideAction({ staff: {}, note: '' }, f), { kind: 'remove' });
   // Without a forecast every number typed is the manager's own.
-  assert.deepEqual(overrideAction({ servers: 4, cooks: null, note: '' }, null), { kind: 'save', servers: 4, cooks: null, note: null });
+  assert.deepEqual(overrideAction({ staff: { servers: 4 }, note: '' }, null), { kind: 'save', staff: { servers: 4, bar_staff: null, runners: null, food_staff: null }, note: null });
 });
 
 test('saving: a long note is cut to the limit', () => {
-  const action = overrideAction({ servers: null, cooks: null, note: 'x'.repeat(500) }, null);
+  const action = overrideAction({ staff: {}, note: 'x'.repeat(500) }, null);
   assert.equal(action.kind === 'save' && action.note?.length, 300);
 });
 
@@ -152,7 +207,7 @@ test('staff field: empty, whole numbers 0 to 99, nothing else', () => {
 });
 
 test('last update and staleness', () => {
-  const rows = [forecast('2026-10-10', 1, 1, 1), { ...forecast('2026-10-11', 1, 1, 1), created_at: '2026-10-10T01:10:00+00:00' }];
+  const rows = [forecast('2026-10-10', 1, 1), { ...forecast('2026-10-11', 1, 1), created_at: '2026-10-10T01:10:00+00:00' }];
   assert.equal(lastUpdated(rows), '2026-10-10T01:10:00+00:00');
   assert.equal(lastUpdated([]), null);
   assert.equal(isStale('2026-10-10T01:00:00Z', new Date('2026-10-11T12:00:00Z')), false); // 35 hours
@@ -170,9 +225,10 @@ test('"when" is told in the restaurant\'s time', () => {
 });
 
 test('guest scale and weather words', () => {
-  const days = buildDays('2026-10-10', [forecast('2026-10-10', 190, 10, 7), forecast('2026-10-11', 120, 6, 4)], [], []);
+  const days = buildDays('2026-10-10', [forecast('2026-10-10', 190, 10), forecast('2026-10-11', 120, 6)], [], []);
   assert.equal(guestScale(days), 200);
-  assert.equal(guestScale(buildDays('2026-10-10', [forecast('2026-10-10', 70, 4, 4)], [], [])), 75);
+  assert.equal(guestScale(buildDays('2026-10-10', [forecast('2026-10-10', 300, 11)], [], [])), 300);
+  assert.equal(guestScale(buildDays('2026-10-10', [forecast('2026-10-10', 70, 4)], [], [])), 75);
   assert.equal(guestScale(buildDays('2026-10-10', [], [], [])), 50);
   assert.equal(temperatureText(16.6), '17°');
   assert.equal(temperatureText(-0.4), '0°');
