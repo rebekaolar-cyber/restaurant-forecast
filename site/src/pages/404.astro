@@ -1,0 +1,25 @@
+---
+import Base from '../layouts/Base.astro';
+import { nl as t } from '../content/nl';
+
+const page = t.notFound;
+---
+
+<Base title={page.title} noindex>
+  <div class="wrap page-head">
+    <h1>{page.heading}</h1>
+  </div>
+  <div class="wrap body">
+    <p class="lead">{page.text}</p>
+    <p><a class="button" href="/">{page.home}</a></p>
+  </div>
+</Base>
+
+<style>
+  .body {
+    display: grid;
+    justify-items: start;
+    gap: 2rem;
+    padding-bottom: var(--section);
+  }
+</style>

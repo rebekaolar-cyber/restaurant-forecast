@@ -1,0 +1,186 @@
+---
+import Base from '../layouts/Base.astro';
+import Photo from '../components/Photo.astro';
+import OpeningHours from '../components/OpeningHours.astro';
+import { nl as t } from '../content/nl';
+import { restaurant } from '../content/restaurant';
+
+const page = t.home;
+---
+
+<Base title={page.title} description={page.description} bareTitle>
+  <section class="hero">
+    <div class="hero__photo">
+      <Photo name="hero" ratio="4x5" sizes="(min-width: 60rem) 50vw, 100vw" eager />
+    </div>
+    <div class="hero__text">
+      <h1>{page.heading}</h1>
+      <p class="lead">{page.lead}</p>
+      <p class="status dot" data-today-line>{t.hours.everyDay}</p>
+      <div class="actions">
+        <a class="button" href={restaurant.bookingUrl}>{t.reserve.button}</a>
+        <a class="link" href="/menu/">{page.menuLink}</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="band rooms">
+    <div class="wrap">
+      <h2>{page.rooms.title}</h2>
+      <div class="rooms__grid">
+        <figure class="room">
+          <Photo name="restaurant" ratio="3x2" sizes="(min-width: 52rem) 45vw, 100vw" />
+          <figcaption>
+            <h3>{page.rooms.restaurant.title}</h3>
+            <p>{page.rooms.restaurant.text}</p>
+          </figcaption>
+        </figure>
+        <figure class="room room--offset">
+          <Photo name="binnentuin" ratio="3x2" sizes="(min-width: 52rem) 45vw, 100vw" />
+          <figcaption>
+            <h3>{page.rooms.binnentuin.title}</h3>
+            <p>{page.rooms.binnentuin.text}</p>
+          </figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="band band--mist">
+    <div class="wrap visit">
+      <div class="visit__hours">
+        <h2>{page.visit.title}</h2>
+        <OpeningHours />
+      </div>
+      <div class="visit__address">
+        <h3>{restaurant.name}</h3>
+        <address>
+          {restaurant.street}<br />
+          {restaurant.postcode} {restaurant.city}
+        </address>
+        <p><a class="link" href={restaurant.mapUrl}>{t.address.map}</a></p>
+        <p class="visit__reserve">
+          <a class="button" href={restaurant.bookingUrl}>{t.reserve.button}</a>
+        </p>
+        <p class="small muted">{t.reserve.note}</p>
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  /* Hero: photo first on a phone, text beside the photo on a wide screen. */
+  .hero__photo :global(.photo) {
+    max-height: 62svh;
+  }
+
+  .hero__text {
+    width: min(100% - 2 * var(--gutter), var(--wide));
+    margin-inline: auto;
+    padding-block: 2.25rem 0.5rem;
+  }
+
+  .hero__text h1 {
+    font-size: clamp(2.375rem, 1.45rem + 3.6vw, 4rem);
+  }
+
+  .hero__text .lead {
+    margin-top: 1.25rem;
+  }
+
+  .status {
+    margin-top: 1.5rem;
+    font-weight: 500;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.75rem;
+    margin-top: 1.5rem;
+  }
+
+  .rooms__grid {
+    display: grid;
+    gap: 3rem;
+    margin-top: 2rem;
+  }
+
+  .room figcaption {
+    margin-top: 1rem;
+  }
+
+  .room h3 {
+    margin-bottom: 0.25rem;
+  }
+
+  .visit {
+    display: grid;
+    gap: 3rem;
+  }
+
+  .visit__hours h2 {
+    margin-bottom: 2rem;
+  }
+
+  .visit__address h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  .visit__address p {
+    margin-top: 0.5rem;
+  }
+
+  .visit__address .visit__reserve {
+    margin-top: 1.75rem;
+  }
+
+  @media (min-width: 52rem) {
+    .rooms__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      column-gap: clamp(2rem, 5vw, 5rem);
+      margin-top: 3rem;
+    }
+
+    /* The second room sits lower, so the pair reads as a walk through. */
+    .room--offset {
+      margin-top: 7rem;
+    }
+  }
+
+  @media (min-width: 60rem) {
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 6fr) minmax(0, 5fr);
+      align-items: end;
+      column-gap: clamp(2.5rem, 5vw, 5rem);
+      width: min(100% - 2 * var(--gutter), var(--wide));
+      margin-inline: auto;
+      padding-top: 3rem;
+    }
+
+    .hero__photo {
+      order: 2;
+    }
+
+    .hero__photo :global(.photo) {
+      max-height: min(46rem, 78svh);
+    }
+
+    .hero__text {
+      width: auto;
+      margin: 0;
+      padding-block: 0 1rem;
+    }
+
+    .visit {
+      grid-template-columns: minmax(0, 7fr) minmax(0, 4fr);
+      column-gap: clamp(3rem, 7vw, 7rem);
+    }
+
+    .visit__address {
+      padding-top: calc(var(--h2) * 1.1 + 2rem);
+    }
+  }
+</style>

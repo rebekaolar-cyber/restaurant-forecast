@@ -1,0 +1,106 @@
+---
+import Base from '../layouts/Base.astro';
+import Photo from '../components/Photo.astro';
+import Placeholder from '../components/Placeholder.astro';
+import { nl as t } from '../content/nl';
+import { restaurant } from '../content/restaurant';
+
+const page = t.about;
+---
+
+<Base title={page.title} description={page.description}>
+  <div class="wrap page-head">
+    <h1>{page.heading}</h1>
+  </div>
+
+  <div class="wrap about">
+    <div class="about__photo">
+      <Photo name="about" ratio="4x5" sizes="(min-width: 52rem) 40vw, 100vw" eager />
+    </div>
+    <div class="about__text">
+      <Placeholder>{page.storyWanted}</Placeholder>
+
+      <h2>{page.facts.title}</h2>
+      <dl class="facts">
+        <div>
+          <dt>{page.facts.open.term}</dt>
+          <dd>{page.facts.open.value}</dd>
+        </div>
+        <div>
+          <dt>{page.facts.seats.term}</dt>
+          <dd>{page.facts.seats.value}</dd>
+        </div>
+        <div>
+          <dt>{page.facts.garden.term}</dt>
+          <dd>{page.facts.garden.value}</dd>
+        </div>
+        <div>
+          <dt>{page.facts.address.term}</dt>
+          <dd>
+            <address>{restaurant.street}, {restaurant.postcode} {restaurant.city}</address>
+          </dd>
+        </div>
+      </dl>
+
+      <p class="actions">
+        <a class="button" href={restaurant.bookingUrl}>{t.reserve.button}</a>
+        <a class="link" href="/contact/">{t.nav.contact}</a>
+      </p>
+    </div>
+  </div>
+
+  <div class="wrap band rooms">
+    <Photo name="restaurant" ratio="3x2" sizes="(min-width: 52rem) 45vw, 100vw" />
+    <Photo name="binnentuin" ratio="3x2" sizes="(min-width: 52rem) 45vw, 100vw" />
+  </div>
+</Base>
+
+<style>
+  .about {
+    display: grid;
+    gap: 2.5rem;
+  }
+
+  .about__text h2 {
+    margin-top: 2.5rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .facts > div {
+    display: grid;
+    grid-template-columns: 7.5rem 1fr;
+    column-gap: 1rem;
+    padding-block: 0.8rem;
+    border-top: 1px solid var(--line);
+  }
+
+  .facts dt {
+    color: var(--muted);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.75rem;
+    margin-top: 2rem;
+  }
+
+  .rooms {
+    display: grid;
+    gap: 1.25rem;
+  }
+
+  @media (min-width: 52rem) {
+    .about {
+      grid-template-columns: minmax(0, 4fr) minmax(0, 5fr);
+      column-gap: clamp(2.5rem, 6vw, 6rem);
+      align-items: start;
+    }
+
+    .rooms {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: clamp(1.25rem, 3vw, 2.5rem);
+    }
+  }
+</style>
