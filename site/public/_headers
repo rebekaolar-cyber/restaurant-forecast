@@ -1,0 +1,14 @@
+# Cloudflare Pages reads this file. Stage 4 adds the full security headers.
+# For now: keep the login and the dashboard out of search engines, also for
+# crawlers that only look at headers.
+
+/login
+  X-Robots-Tag: noindex, nofollow
+/login/*
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: no-referrer
+/dashboard
+  X-Robots-Tag: noindex, nofollow
+/dashboard/*
+  X-Robots-Tag: noindex, nofollow
+  Referrer-Policy: no-referrer

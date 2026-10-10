@@ -143,7 +143,7 @@ export const nl = {
         heading: 'Wat deze website niet doet',
         paragraphs: [
           'Deze website plaatst geen cookies, gebruikt geen statistiek- of advertentieprogramma’s en laadt geen onderdelen van andere partijen. Ook de lettertypen komen van onze eigen website.',
-          'Er staan geen formulieren op de website. U laat hier dus geen naam, telefoonnummer of e-mailadres achter.',
+          'Op de openbare pagina’s staan geen formulieren. Als gast laat u hier dus geen naam, telefoonnummer of e-mailadres achter.',
         ],
       },
       {
@@ -156,6 +156,13 @@ export const nl = {
         heading: 'Reserveren',
         paragraphs: [
           `De knop “Reserveer een tafel” brengt u naar het reserveringssysteem op ${restaurant.currentWebsiteLabel}. De gegevens die u daar invult, worden door dat systeem verwerkt. Daarvoor geldt de privacyverklaring die u daar vindt.`,
+        ],
+      },
+      {
+        heading: 'Inloggen voor medewerkers',
+        paragraphs: [
+          'Medewerkers met een uitnodiging kunnen inloggen op een afgeschermd dashboard. Daarvoor bewaren wij hun e-mailadres en een versleuteld wachtwoord bij onze databaseleverancier Supabase, op servers in de Europese Unie (Frankfurt). Alleen de inlogpagina en het dashboard maken verbinding met Supabase, de openbare pagina’s niet.',
+          'Na het inloggen bewaart de browser een inlogsleutel op het eigen apparaat, zodat de medewerker ingelogd blijft. Die sleutel is alleen voor het inloggen en wordt niet gebruikt om iemand te volgen. Met “Uitloggen” wordt hij verwijderd.',
         ],
       },
       {
@@ -185,6 +192,7 @@ export const nl = {
   footer: {
     navLabel: 'Pagina’s',
     through: 't/m',
+    staff: 'Inloggen voor medewerkers',
   },
 } as const;
 

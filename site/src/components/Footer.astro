@@ -53,8 +53,9 @@ const label = (from: number, to: number) =>
       </ul>
     </nav>
   </div>
-  <div class="wrap">
-    <p class="legal">© {year} {restaurant.name}</p>
+  <div class="wrap legal">
+    <p>© {year} {restaurant.name}</p>
+    <a href="/login/" rel="nofollow">{t.footer.staff}</a>
   </div>
 </footer>
 
@@ -108,10 +109,20 @@ const label = (from: number, to: number) =>
   }
 
   .legal {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem 2rem;
     margin-top: 3rem;
-    padding-top: 1.25rem;
+    padding-top: 0.75rem;
     border-top: 1px solid var(--pattern);
     color: #cfcacb;
+  }
+
+  .legal a {
+    display: inline-block;
+    padding-block: 0.55rem;
   }
 
   @media (min-width: 40rem) {
