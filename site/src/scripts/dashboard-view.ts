@@ -11,6 +11,7 @@ import {
   dayLabel,
   dayLabelLong,
   firstDayShown,
+  fixedKitchen,
   guestScale,
   isStale,
   lastUpdated,
@@ -19,11 +20,14 @@ import {
   overrideAction,
   rainText,
   readStaff,
+  ROLES,
   serviceDay,
   temperatureText,
   whenAtRestaurant,
   type DayShift,
   type Restaurant,
+  type Role,
+  type StaffNumbers,
 } from '../lib/forecast-days';
 import { show } from './staff-form';
 
@@ -64,10 +68,11 @@ export function mountForecast(
     empty: find('[data-note="empty"]'),
     weather: find('[data-note="weather"]'),
     hint: find('[data-note="hint"]'),
+    legend: find('[data-note="legend"]'),
   };
   if (!list) return;
 
-  let rows: ForecastWindow = { forecasts: [], weather: [], overrides: [] };
+  let rows: ForecastWindow = { forecasts: [], weather: [], overrides: [], roles: ROLES };
   let days: DayShift[] = [];
   let scale = 50;
   let openKey: string | null = null;
@@ -83,20 +88,41 @@ export function mountForecast(
 
   // ---------- One line of the list ----------
 
-  function staffCell(
-    role: 'servers' | 'cooks',
-    value: number | null,
-    changed: boolean,
-    forecast?: number,
-  ) {
-    const label = t.columns[role];
-    const cell = el('span', `day__staff day__staff--${role}${changed ? ' day__staff--changed' : ''}`);
-    cell.append(hiddenText(`${label} `), el('span', 'day__n', value == null ? '–' : String(value)));
-    if (changed && forecast != null) {
-      cell.append(' ', el('span', 'day__was', fill(t.forecastWas, { n: forecast })));
-    }
-    cell.append(hiddenText('. '));
+  /** One roster role on one line. `column` is its place in the roster order. */
+  function staffCell(role: Role, column: number, day: DayShift) {
+    const { value, overridden } = day.staff[role];
+    const cell = el('span', `day__staff col-${column}${overridden ? ' day__staff--changed' : ''}`);
+    cell.append(
+      hiddenText(`${t.roles[role].name} `),
+      el('span', 'day__n', value == null ? '–' : String(value)),
+      hiddenText('. '),
+    );
     return cell;
+  }
+
+  /**
+   * Under a number the manager changed: the forecast's number, in the same
+   * column, on a line that starts with the word "prognose".
+   */
+  function forecastLine(day: DayShift): HTMLElement[] {
+    const changed = rows.roles.filter(
+      (role) => day.staff[role].overridden && day.staff[role].forecast != null,
+    );
+    if (changed.length === 0) return [];
+    const label = el('span', 'day__waslabel', t.forecastWas);
+    label.setAttribute('aria-hidden', 'true');
+    return [
+      label,
+      ...changed.map((role) => {
+        const cell = el('span', `day__was col-${rows.roles.indexOf(role)}`);
+        cell.append(
+          hiddenText(`${t.roles[role].name} ${t.forecastWas} `),
+          String(day.staff[role].forecast),
+          hiddenText('. '),
+        );
+        return cell;
+      }),
+    ];
   }
 
   function fillRow(button: HTMLButtonElement, day: DayShift): void {
@@ -141,9 +167,9 @@ export function mountForecast(
       date,
       weather,
       guests,
-      staffCell('servers', day.servers, day.serversOverridden, day.forecast?.servers),
-      staffCell('cooks', day.cooks, day.cooksOverridden, day.forecast?.cooks),
+      ...rows.roles.map((role, column) => staffCell(role, column, day)),
       chevron,
+      ...forecastLine(day),
     );
     if (day.override?.note) {
       const note = el('span', 'day__note');
@@ -167,8 +193,8 @@ export function mountForecast(
     return `${w.is_forecast ? t.weather.forecast : t.weather.measured}: ${parts.join(', ')}.`;
   }
 
-  function stepper(name: 'servers' | 'cooks', key: string) {
-    const label = t.editor[name];
+  function stepper(name: Role, key: string) {
+    const label = `${t.roles[name].name} (${t.roles[name].letter})`;
     const id = `${panelId(key)}-${name}`;
     const wrap = el('div', 'stepper');
     const caption = el('label', 'stepper__label', label);
@@ -212,10 +238,11 @@ export function mountForecast(
     const form = el('form', 'editor');
     form.noValidate = true;
     const title = el('h2', 'editor__title');
-    const servers = stepper('servers', key);
-    const cooks = stepper('cooks', key);
+    const steppers = rows.roles.map((role) => ({ role, ...stepper(role, key) }));
     const fields = el('div', 'editor__fields');
-    fields.append(servers.wrap, cooks.wrap);
+    fields.append(...steppers.map((stepper) => stepper.wrap));
+    // The kitchen is a fixed crew: shown, not editable.
+    const kitchen = el('p', 'editor__kitchen small muted');
 
     const noteId = `${panelId(key)}-note`;
     const noteWrap = el('div', 'field');
@@ -245,7 +272,7 @@ export function mountForecast(
     actions.append(save, remove);
     const changed = el('p', 'small muted');
 
-    form.append(title, fields, noteWrap, problem, actions, done, changed);
+    form.append(title, fields, kitchen, noteWrap, problem, actions, done, changed);
     panel.append(weather, form);
 
     /** Put the stored values into the fields. */
@@ -254,12 +281,14 @@ export function mountForecast(
       if (!day) return;
       title.textContent = fill(t.editor.title, { day: dayLabelLong(day.date) });
       weather.textContent = weatherSentence(day);
-      servers.input.value = day.servers == null ? '' : String(day.servers);
-      cooks.input.value = day.cooks == null ? '' : String(day.cooks);
-      const hintFor = (n: number | undefined) =>
-        n == null ? t.editor.noForecastHint : fill(t.editor.forecastHint, { n });
-      servers.hint.textContent = hintFor(day.forecast?.servers);
-      cooks.hint.textContent = hintFor(day.forecast?.cooks);
+      for (const { role, input, hint } of steppers) {
+        const { value, forecast } = day.staff[role];
+        input.value = value == null ? '' : String(value);
+        hint.textContent =
+          forecast == null ? t.editor.noForecastHint : fill(t.editor.forecastHint, { n: forecast });
+      }
+      kitchen.textContent = day.kitchen == null ? '' : fill(t.kitchenThisDay, { n: day.kitchen });
+      kitchen.hidden = day.kitchen == null;
       note.value = day.override?.note ?? '';
       remove.hidden = !day.override;
       if (day.override) {
@@ -290,7 +319,7 @@ export function mountForecast(
       done.textContent = '';
       busy(true);
       try {
-        const stored = await applyOverride(restaurant.id, day.date, day.shift, action);
+        const stored = await applyOverride(restaurant.id, day.date, day.shift, action, rows.roles);
         rows.overrides = rows.overrides.filter(
           (o) => !(o.date === day.date && o.shift === day.shift),
         );
@@ -320,19 +349,19 @@ export function mountForecast(
       event.preventDefault();
       const day = dayOf(key);
       if (!day) return;
-      const s = readStaff(servers.input.value);
-      const c = readStaff(cooks.input.value);
-      if (!s.ok || !c.ok) {
-        done.textContent = '';
-        problem.textContent = t.editor.invalid;
-        problem.hidden = false;
-        (s.ok ? cooks.input : servers.input).focus();
-        return;
+      const staff: StaffNumbers = {};
+      for (const { role, input } of steppers) {
+        const typed = readStaff(input.value);
+        if (!typed.ok) {
+          done.textContent = '';
+          problem.textContent = t.editor.invalid;
+          problem.hidden = false;
+          input.focus();
+          return;
+        }
+        staff[role] = typed.value;
       }
-      const action = overrideAction(
-        { servers: s.value, cooks: c.value, note: note.value },
-        day.forecast,
-      );
+      const action = overrideAction({ staff, note: note.value }, day.forecast, rows.roles);
       if (action.kind === 'remove' && !day.override) {
         problem.hidden = true;
         sync();
@@ -375,9 +404,34 @@ export function mountForecast(
     scale = guestScale(days);
   }
 
+  /** Column names above the list: the roster letters, in roster order. */
+  function renderHead(): void {
+    if (!head) return;
+    const cell = (className: string, text = '') => el('span', className, text);
+    head.replaceChildren(
+      cell('days__day'),
+      cell('days__guests', t.columns.guests),
+      ...rows.roles.map((role, column) => cell(`days__role col-${column}`, t.roles[role].letter)),
+      cell('days__weather', t.columns.weather),
+    );
+  }
+
+  /** "W = bediening, B = bar, ..." plus the fixed kitchen crew when it is the same every day. */
+  function legendText(): string {
+    const letters = rows.roles
+      .map((role) => `${t.roles[role].letter} = ${t.roles[role].name.toLowerCase()}`)
+      .join(', ');
+    const kitchen = fixedKitchen(days);
+    return `${letters}.${kitchen == null ? '' : ` ${fill(t.kitchenEveryDay, { n: kitchen })}`}`;
+  }
+
   function render(): void {
     rebuild();
     openKey = null;
+    // The stylesheet lays out as many staff columns as there are roles.
+    root.style.setProperty('--roles', String(rows.roles.length));
+    renderHead();
+    if (notes.legend) notes.legend.textContent = legendText();
     list?.replaceChildren(
       ...days.map((day) => {
         const item = el('li', 'day');
@@ -419,6 +473,7 @@ export function mountForecast(
     show(notes.empty, shown.length === 0);
     show(notes.weather, shown.length > 0 && !days.some((d) => d.weather));
     show(notes.hint);
+    show(notes.legend);
     show(head);
     show(list);
     show(refresh);

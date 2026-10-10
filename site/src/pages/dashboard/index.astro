@@ -70,16 +70,11 @@ const d = t.dashboard;
       </div>
 
       <p class="small muted" data-note="hint" hidden>{d.hint}</p>
+      <p class="small muted" data-note="legend" hidden></p>
 
-      {/* Column names. The same words are read out per line for screen readers. */}
-      <div class="days__head" data-list-head aria-hidden="true" hidden>
-        <span class="days__day"></span>
-        <span>{d.columns.guests}</span>
-        <span>{d.columns.servers}</span>
-        <span>{d.columns.cooks}</span>
-        <span class="days__weather">{d.columns.weather}</span>
-        <span></span>
-      </div>
+      {/* Column names (the roster letters), filled in by the script. The full
+          role names are read out per line for screen readers. */}
+      <div class="days__head" data-list-head aria-hidden="true" hidden></div>
       <ul role="list" class="days" data-list hidden></ul>
     </section>
   </div>

@@ -59,12 +59,23 @@ export const staffText = {
     refreshing: 'Bezig met vernieuwen…',
     hint: 'Kies een dag om de bezetting aan te passen of een notitie te maken.',
 
-    columns: { guests: 'Gasten', servers: 'Bediening', cooks: 'Keuken', weather: 'Weer' },
+    columns: { guests: 'Gasten', weather: 'Weer' },
+    // The roster roles, in roster order. `letter` is what the roster calls the
+    // role; `name` is the word used in the edit panel and by screen readers.
+    roles: {
+      servers: { letter: 'W', name: 'Bediening' },
+      bar_staff: { letter: 'B', name: 'Bar' },
+      runners: { letter: 'R', name: 'Runners' },
+      food_staff: { letter: 'F', name: 'Food' },
+    },
+    // {n} = the kitchen crew from the forecast.
+    kitchenEveryDay: 'Keuken: elke dag {n}, vaste bezetting.',
+    kitchenThisDay: 'Keuken: {n}, vaste bezetting. Niet aan te passen.',
     today: 'vandaag',
     guests: 'gasten',
     noForecast: 'Geen prognose',
-    // Shown under a number the manager changed. {n} = the forecast's number.
-    forecastWas: 'prognose {n}',
+    // Label of the line with the forecast's numbers, under numbers the manager changed.
+    forecastWas: 'prognose',
     noteLabel: 'Notitie:',
     noWeatherYet: 'Het weer is nog niet beschikbaar.',
     weather: {
@@ -92,8 +103,6 @@ export const staffText = {
     editor: {
       // {day} = zaterdag 10 oktober
       title: 'Bezetting voor {day}',
-      servers: 'Bediening',
-      cooks: 'Keuken',
       less: 'één minder',
       more: 'één meer',
       forecastHint: 'Prognose: {n}',
