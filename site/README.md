@@ -85,27 +85,47 @@ Settings this needs in Supabase (Authentication):
 ## The dashboard
 
 One screen with the next 14 days. Per day: expected guests (number and bar),
-recommended service and kitchen staff, and the weather. Choosing a day opens
-it: the manager can set their own staff numbers and write a note.
+the staff per roster role, and the weather. Choosing a day opens it: the
+manager can set their own numbers per role and write a note.
+
+The roster roles, in roster order:
+
+| Roster letter | Column in the database | Shown as |
+|---|---|---|
+| W | `servers` (floor staff) | Bediening |
+| B | `bar_staff` | Bar |
+| R | `runners` | Runners |
+| F | `food_staff` | Food |
+
+The kitchen (`cooks`) is a fixed crew and is not on the roster. The dashboard
+shows it (once above the list when it is the same every day, and in each
+opened day) but never offers to change it.
 
 What it reads and writes (names are the shared contract):
 
 | Table | Use |
 |---|---|
 | `restaurants` | read: id, name, timezone of the restaurant this login belongs to |
-| `forecasts` | read: guests, servers, cooks, model, created_at |
+| `forecasts` | read: guests, servers, bar_staff, runners, food_staff, cooks, model, created_at |
 | `daily_weather` | read |
 | `forecast_overrides` | read, upsert on `restaurant_id, date, shift`, delete |
 
 How an override is stored:
 
-- Only `restaurant_id, date, shift, servers, cooks, note` are sent. The
-  database records who changed it and when.
+- Only `restaurant_id, date, shift, servers, bar_staff, runners, food_staff,
+  cooks, note` are sent. The database records who changed it and when.
 - A number equal to the forecast's is sent as empty, which means "keep the
   forecast's number". Only a number the manager really changed is pinned.
+- `cooks` is always sent empty: the kitchen is never overridden from here.
 - Numbers back at the forecast and no note: the row is deleted.
-- The line then shows the manager's number in a black box with
-  "prognose N" under it, and the note.
+- The line then shows the manager's number in a black box with the
+  forecast's number under it (on the line that starts with "prognose"), and
+  the note.
+
+If the database does not have `bar_staff`, `runners` and `food_staff` yet,
+the dashboard notices (the database answers "column does not exist"), asks
+again without them, and shows and saves only W. Nothing has to be changed
+here once the columns arrive.
 
 Things it decides on its own:
 
