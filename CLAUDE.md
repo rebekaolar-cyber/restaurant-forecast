@@ -115,4 +115,15 @@ How the lock is built (keep it this way when adding tables):
 - `supabase/tests/rls_lock.sql` proves the lock. Run it after every schema change; it changes
   nothing (everything it inserts is rolled back). Locally:
   `supabase/tests/run_local.sh` starts a throwaway Postgres, applies migrations and seed, and
-  runs the test.
+  runs the test. No network or keys needed.
+- `supabase/tests/check_public_api.py tables` asks the real project over the web what a visitor
+  without a login gets (must be nothing), and `... signup` checks that public sign-up is off.
+  They need only the project URL and the public key.
+- `.github/workflows/lock-check.yml` runs all three on every pull request that touches
+  `supabase/`, and has a "Run workflow" button.
+
+## GitHub Secrets (added by Rebeka by hand, never pasted in chat)
+
+- `SUPABASE_URL`: the project URL above.
+- `SUPABASE_SECRET_KEY`: the secret key (`sb_secret_...`) from Supabase > Project Settings >
+  API Keys. Only the nightly job uses it.
