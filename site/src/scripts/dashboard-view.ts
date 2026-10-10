@@ -78,7 +78,7 @@ export function mountForecast(
     states.forEach((s) => show(find(`[data-state="${s}"]`), s === name));
   const dayOf = (key: string) => days.find((d) => d.key === key);
   const rowOf = (key: string) =>
-    list?.querySelector<HTMLButtonElement>(`.day__row[data-key="${key}"]`) ?? null;
+    list?.querySelector<HTMLButtonElement>(`.day__row[data-key="${CSS.escape(key)}"]`) ?? null;
   const panelId = (key: string) => `dag-${key.replace(/[^0-9a-z]/gi, '-')}`;
 
   // ---------- One line of the list ----------
