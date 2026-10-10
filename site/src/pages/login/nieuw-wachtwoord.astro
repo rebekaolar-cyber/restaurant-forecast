@@ -1,0 +1,70 @@
+---
+import Staff from '../../layouts/Staff.astro';
+import { staffText as t } from '../../content/nl.staff';
+
+const p = t.setPassword;
+---
+
+<Staff title={p.title}>
+  <div class="panel">
+    <noscript><p class="notice">{t.login.noscript}</p></noscript>
+
+    <p class="muted" data-view="checking" role="status" hidden>{p.checking}</p>
+
+    <section data-view="form" hidden>
+      <h1>{p.title}</h1>
+      <p class="muted">{p.intro}</p>
+
+      <form class="form" data-set-password method="post" action="/login/nieuw-wachtwoord/">
+        <div class="field">
+          <label for="new-password">{p.password}</label>
+          <div class="password">
+            <input
+              class="input"
+              id="new-password"
+              name="password"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+            <button type="button" data-toggle-password aria-controls="new-password" aria-pressed="false">
+              {t.login.show}
+            </button>
+          </div>
+        </div>
+        <div class="field">
+          <label for="repeat-password">{p.repeat}</label>
+          <div class="password">
+            <input
+              class="input"
+              id="repeat-password"
+              name="repeat"
+              type="password"
+              autocomplete="new-password"
+              minlength="8"
+              required
+            />
+            <button type="button" data-toggle-password aria-controls="repeat-password" aria-pressed="false">
+              {t.login.show}
+            </button>
+          </div>
+        </div>
+        <p class="notice" role="alert" data-message hidden></p>
+        <button class="button" type="submit">{p.submit}</button>
+      </form>
+    </section>
+
+    <section data-view="expired" hidden>
+      <h1>{p.expiredTitle}</h1>
+      <p>{p.expired}</p>
+      <p class="below"><a class="button" href="/login/#vergeten">{p.request}</a></p>
+    </section>
+
+    <p class="notice" data-view="saved" role="status" hidden>{p.saved}</p>
+  </div>
+
+  <script>
+    import '../../scripts/set-password';
+  </script>
+</Staff>

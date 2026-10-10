@@ -1,0 +1,46 @@
+---
+// Layout for the pages behind (or around) the login. Always kept out of
+// search engines. No public navigation: these screens have one job each.
+import '../styles/global.css';
+import '../styles/staff.css';
+import { nl as t } from '../content/nl';
+import logo from '../assets/brand/habibi-logo-black.svg?url';
+import serifFont from '../assets/fonts/brygada-1918-latin-wght-normal.woff2?url';
+import sansFont from '../assets/fonts/alegreya-sans-latin-400-normal.woff2?url';
+
+interface Props {
+  title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang={t.lang}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title} | {t.siteName}</title>
+    <meta name="robots" content="noindex, nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#231f20" />
+    <meta name="format-detection" content="telephone=no" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href={serifFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
+  </head>
+  <body>
+    <header class="staff-header">
+      <div class="wrap bar">
+        <a class="logo" href="/">
+          <img src={logo} width="352" height="100" alt={t.logoAlt} />
+        </a>
+        <slot name="actions" />
+      </div>
+    </header>
+    <main class="wrap staff-main">
+      <slot />
+    </main>
+  </body>
+</html>

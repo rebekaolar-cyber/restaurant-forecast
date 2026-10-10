@@ -117,6 +117,11 @@
   box-sizing: border-box;
 }
 
+/* "hidden" always wins, also on elements that set their own display. */
+[hidden] {
+  display: none !important;
+}
+
 html {
   -webkit-text-size-adjust: 100%;
   text-size-adjust: 100%;
@@ -309,6 +314,14 @@ a:hover {
 
 .button:focus-visible {
   border-radius: 999px;
+}
+
+/* The same button when it is a real <button> instead of a link. */
+button.button {
+  border: 0;
+  font: inherit;
+  font-weight: 500;
+  cursor: pointer;
 }
 
 .button--small {
