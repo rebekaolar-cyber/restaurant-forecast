@@ -1,0 +1,56 @@
+name: Lock check
+
+# Proves that the database is locked. Runs on every pull request that touches the database,
+# and can be started by hand with the "Run workflow" button.
+#
+# It needs NO secrets. The two values below are the project URL and the PUBLIC key, the same
+# two values the website ships to every visitor. The secret key is never used here.
+
+on:
+  pull_request:
+    paths:
+      - "supabase/**"
+      - ".github/workflows/lock-check.yml"
+  push:
+    branches: [main]
+    paths:
+      - "supabase/**"
+      - ".github/workflows/lock-check.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  SUPABASE_URL: https://wuyqodgnnjoefaxepkiz.supabase.co
+  SUPABASE_PUBLISHABLE_KEY: sb_publishable_MAz9nrGmBEnc_Y_SLCBxwA_8B8tc91r
+
+jobs:
+  throwaway-database:
+    name: Migrations and lock test on a throwaway database
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Apply migrations and seed, then try to get in as every kind of visitor
+        run: supabase/tests/run_local.sh
+
+  real-project:
+    name: A visitor without a login gets nothing from the real project
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the checker
+        run: python3 supabase/tests/check_public_api.py selftest
+      - name: Read every table with the public key only
+        run: python3 supabase/tests/check_public_api.py tables
+
+  sign-up-off:
+    name: Public sign-up is off
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7
+      - name: Ask the real project whether strangers can create an account
+        run: python3 supabase/tests/check_public_api.py signup
