@@ -40,22 +40,81 @@ export const staffText = {
     request: 'Nieuwe link aanvragen',
   },
   dashboard: {
-    title: 'Dashboard',
+    pageTitle: 'Dashboard',
+    title: 'Komende 14 dagen',
     checking: 'Even controleren of u bent ingelogd…',
     logout: 'Uitloggen',
-    // {restaurant} is replaced with the restaurant's name from the database.
-    loggedInFor: 'Ingelogd voor {restaurant}',
-    loading: 'Gegevens laden…',
+    loading: 'Prognose laden…',
+    noscript: 'Het dashboard werkt alleen als JavaScript aan staat in uw browser.',
+
+    // {time} = 02:52, {day} = wo 7 okt, {model} = the name the forecast job gives itself.
+    updatedToday: 'Prognose bijgewerkt vandaag om {time}.',
+    updatedYesterday: 'Prognose bijgewerkt gisteren om {time}.',
+    updatedOther: 'Prognose bijgewerkt op {day} om {time}.',
+    model: 'Model: {model}.',
+    placeholderModel: 'Dit zijn voorbeeldcijfers. De echte prognose volgt nog.',
+    stale:
+      'De prognose is al meer dan anderhalve dag niet bijgewerkt. De nachtelijke berekening is waarschijnlijk mislukt.',
+    refresh: 'Vernieuwen',
+    refreshing: 'Bezig met vernieuwen…',
+    hint: 'Kies een dag om de bezetting aan te passen of een notitie te maken.',
+
+    columns: { guests: 'Gasten', servers: 'Bediening', cooks: 'Keuken', weather: 'Weer' },
+    today: 'vandaag',
+    guests: 'gasten',
+    noForecast: 'Geen prognose',
+    // Shown under a number the manager changed. {n} = the forecast's number.
+    forecastWas: 'prognose {n}',
+    noteLabel: 'Notitie:',
+    noWeatherYet: 'Het weer is nog niet beschikbaar.',
+    weather: {
+      forecast: 'Weersverwachting',
+      measured: 'Gemeten weer',
+      unknown: 'Geen weergegevens voor deze dag.',
+      dry: 'droog',
+      max: 'maximaal {n} °C',
+      rain: '{n} regen',
+      wind: 'wind tot {n} km/u',
+      sun: '{n} uur zon',
+    },
+
     noRestaurantTitle: 'Nog geen restaurant gekoppeld',
     noRestaurant:
       'Uw account is nog niet aan een restaurant gekoppeld. Vraag de beheerder om u toe te voegen.',
+    emptyTitle: 'Nog geen prognose',
+    empty:
+      'Er is nog geen prognose voor de komende 14 dagen. De prognose wordt elke nacht berekend. U kunt per dag al wel uw eigen bezetting invullen.',
     loadErrorTitle: 'De gegevens zijn niet geladen',
     loadError: 'De server gaf geen antwoord of weigerde de aanvraag.',
     offlineTitle: 'Geen verbinding',
     retry: 'Opnieuw proberen',
-    comingWanted:
-      'De prognose voor de komende 14 dagen: verwachte gasten, aanbevolen bediening en keuken, en het weer. Volgt in fase 3.',
-    noscript: 'Het dashboard werkt alleen als JavaScript aan staat in uw browser.',
+
+    editor: {
+      // {day} = zaterdag 10 oktober
+      title: 'Bezetting voor {day}',
+      servers: 'Bediening',
+      cooks: 'Keuken',
+      less: 'één minder',
+      more: 'één meer',
+      forecastHint: 'Prognose: {n}',
+      noForecastHint: 'Geen prognose',
+      note: 'Notitie',
+      noteHint: 'Optioneel. Zet hier geen namen of telefoonnummers in.',
+      save: 'Opslaan',
+      saving: 'Bezig met opslaan…',
+      saved: 'Opgeslagen.',
+      remove: 'Terug naar de prognose',
+      removed: 'Uw aanpassing is verwijderd. De prognose geldt weer.',
+      nothingToSave: 'Er is niets aangepast. De prognose geldt.',
+      // {when} = vandaag om 21:14 / op vr 9 okt om 21:14
+      changedAt: 'Laatst aangepast {when}.',
+      whenToday: 'vandaag om {time}',
+      whenYesterday: 'gisteren om {time}',
+      whenOther: 'op {day} om {time}',
+      invalid: 'Vul een heel getal van 0 tot 99 in, of laat het veld leeg.',
+      saveFailed: 'Niet opgeslagen. De server weigerde de wijziging. Probeer het opnieuw.',
+      saveOffline: 'Niet opgeslagen: geen verbinding. Controleer uw internet en probeer het opnieuw.',
+    },
   },
   errors: {
     invalidCredentials: 'Het e-mailadres of het wachtwoord klopt niet.',

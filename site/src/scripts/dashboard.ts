@@ -7,19 +7,20 @@
 
 import { supabase, LOGIN_PATH } from '../lib/supabase';
 import { isNetworkError } from '../lib/auth-errors';
-import { staffText } from '../content/nl.staff';
+import { DataError, fetchRestaurant } from '../lib/dashboard-data';
+import { mountForecast } from './dashboard-view';
 import { show } from './staff-form';
 
-const t = staffText.dashboard;
 const checking = document.querySelector<HTMLElement>('[data-checking]');
 const offline = document.querySelector<HTMLElement>('[data-offline]');
 const app = document.querySelector<HTMLElement>('[data-dashboard]');
 const logout = document.querySelector<HTMLButtonElement>('[data-logout]');
 const restaurantLine = document.querySelector<HTMLElement>('[data-restaurant]');
+const forecast = document.querySelector<HTMLElement>('[data-forecast]');
 
-const states = ['loading', 'empty', 'error', 'ready'] as const;
-function state(name: (typeof states)[number]): void {
-  states.forEach((s) => show(app?.querySelector(`[data-state="${s}"]`), s === name));
+const states = ['loading', 'empty', 'error'] as const;
+function state(name: (typeof states)[number] | 'ready'): void {
+  states.forEach((s) => show(app?.querySelector(`[data-restaurant-state="${s}"]`), s === name));
 }
 
 function toLogin(): void {
@@ -32,26 +33,31 @@ async function dropLoginAndLeave(): Promise<void> {
   toLogin();
 }
 
+let mounted = false;
+
 async function loadRestaurant(): Promise<void> {
   state('loading');
-  show(restaurantLine, false);
-  const { data, error, status } = await supabase.from('restaurants').select('id, name').limit(1);
-  if (error) {
+  try {
+    const restaurant = await fetchRestaurant();
+    if (!restaurant) {
+      state('empty');
+      return;
+    }
+    if (restaurantLine) {
+      restaurantLine.textContent = restaurant.name;
+      show(restaurantLine);
+    }
+    state('ready');
+    if (forecast && !mounted) {
+      mounted = true;
+      show(forecast);
+      mountForecast(forecast, restaurant, dropLoginAndLeave);
+    }
+  } catch (error) {
     // 401 after a checked login means the login ended in the meantime.
-    if (status === 401) return dropLoginAndLeave();
+    if (error instanceof DataError && error.kind === 'login-ended') return dropLoginAndLeave();
     state('error');
-    return;
   }
-  const restaurant = data?.[0];
-  if (!restaurant) {
-    state('empty');
-    return;
-  }
-  if (restaurantLine) {
-    restaurantLine.textContent = t.loggedInFor.replace('{restaurant}', String(restaurant.name));
-    show(restaurantLine);
-  }
-  state('ready');
 }
 
 async function start(): Promise<void> {

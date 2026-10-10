@@ -167,18 +167,3 @@
     inset 0 0 0 1.5px var(--ink),
     inset 0 -0.3rem 0 0 var(--magenta);
 }
-
-/* Dashboard */
-.dash h1 {
-  font-size: clamp(2rem, 1.7rem + 1.4vw, 2.75rem);
-}
-
-.dash .who {
-  margin-top: 0.75rem;
-  font-weight: 500;
-}
-
-.dash [data-state] {
-  margin-top: 2rem;
-  max-width: 40rem;
-}
