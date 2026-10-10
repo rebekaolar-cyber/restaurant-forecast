@@ -33,6 +33,27 @@ Small commits on your own branch, and a pull request at the end of each stage.
 - **Fixed crew** on every open day, whatever the forecast says: 4 kitchen staff from 14:00 and
   2 service staff from one hour before opening. The forecast only decides how many extra people
   come on top, and it never goes below this crew.
+- **The roster** (from the restaurant's real rosters, 10 Oct 2026) has four roles:
+  W = floor staff, B = bar, R = runner, F = food. Kitchen staff are not on this roster: they stay
+  the fixed 4 from 14:00.
+- **The manager's staffing rule** is a table by guest number, not a ratio:
+
+  | Guests | W floor | B bar | R runner | F food |
+  |--------|---------|-------|----------|--------|
+  | 100    | 3       | 1     | 1        | 2      |
+  | 120    | 4       | 2     | 2        | 3      |
+  | 180    | 6       | 3     | 2        | 3      |
+  | 250    | 6       | 3     | 3        | 4      |
+  | 300    | 6       | 3     | 3        | 4      |
+
+  Read as: a row applies from its guest number up to the next row, below 100 guests the first row
+  applies, and the numbers are totals (the 2 fixed service staff included). **Rebeka has not
+  confirmed this reading yet.** It only changes the rows in `staffing_rules`, not the contract.
+- **The manager's weekly plan**: the same guests per weekday, every week: Mon 100, Tue 100,
+  Wed 100, Thu 120, Fri 250, Sat 300, Sun 180. This is the benchmark in every backtest. Our
+  forecast has to beat it. It lives in `forecast/manager_plan.py`.
+- **One real number**: on Friday 9 October 2026 the reservation book held 47 reservations for
+  174 people, walk-ins included. The fake history is tuned so a normal Friday lands there.
 
 ## Stack (decided; ask before changing it)
 
@@ -51,29 +72,50 @@ Every table has `restaurant_id` (in `restaurants` it is the `id` column).
 
 - `restaurants(id, name, latitude, longitude, timezone, seats)`
 - `restaurant_members(user_id, restaurant_id)`
-- `staffing_rules(restaurant_id, role, guests_per_staff, min_staff)`
+- `staffing_rules(restaurant_id, guests_from, servers, bar_staff, runners, food_staff, cooks)`,
+  one row per guest level
 - `daily_weather(restaurant_id, date, temp_max, rain_mm, wind_max, sunshine_hours, is_forecast)`
 - `bookings(id, restaurant_id, visit_date, visit_time, party_size, table_no, created_at, status)`
 - `receipts(id, restaurant_id, opened_at, closed_at, table_no, guests, total)`
-- `forecasts(restaurant_id, date, shift, predicted_guests, servers, cooks, model, created_at)`,
-  one row per restaurant, date and shift
-- `forecast_overrides(restaurant_id, date, shift, servers, cooks, note, updated_by, updated_at)`
+- `forecasts(restaurant_id, date, shift, predicted_guests, servers, bar_staff, runners,
+  food_staff, cooks, model, created_at)`, one row per restaurant, date and shift
+- `forecast_overrides(restaurant_id, date, shift, servers, bar_staff, runners, food_staff, cooks,
+  note, updated_by, updated_at)`
 
 The server writes `forecasts`. The dashboard reads `forecasts` and `daily_weather` and writes
 `forecast_overrides`. **Nothing else crosses between the two halves.** If the contract has to
 change, stop and tell Rebeka, so she can pass it to the other conversation.
 
+Contract change of 10 Oct 2026 (migration `20261010133957`), made because the real roster has
+four roles and a staffing table by guest bands. It only adds; nothing the dashboard used was
+renamed or removed:
+
+- `forecasts` and `forecast_overrides` gained `bar_staff`, `runners` and `food_staff`.
+- `servers` now means floor staff (W). `cooks` means kitchen and is always the fixed 4.
+- `staffing_rules` changed from one row per role (`role, guests_per_staff, min_staff`) to one
+  row per guest level. The dashboard does not read it.
+- The old rule table still exists as `staffing_rules_retired`, closed to everyone. It is used by
+  nothing. Deleting it needs Rebeka's own confirmation in the Supabase connector.
+
 Details the contract leaves open, as built in `supabase/migrations/`:
 
 - Ids are `uuid`. Dates are `date`, timestamps are `timestamptz` (UTC).
-- `role` is `'server'` or `'cook'`. `shift` is always `'dinner'`.
-- Staff = the larger of `min_staff` and guests / `guests_per_staff` rounded up.
+- `shift` is always `'dinner'`.
+- Roster letter to column: W = `servers`, B = `bar_staff`, R = `runners`, F = `food_staff`.
+  Kitchen = `cooks`.
+- Staff for a guest number = the `staffing_rules` row with the highest `guests_from` that is not
+  above it; below the first row, the first row. `forecast/staffing.py` does this.
+- `forecasts.model` is `'placeholder'` (seed rows) or `'baseline'`. `created_at` is the moment
+  the forecast was made.
 - Weather units: `temp_max` in °C, `rain_mm` in mm, `wind_max` in km/h, `sunshine_hours` in hours.
   `rain_mm` is all precipitation of the day (Open-Meteo `precipitation_sum`). Today and later
   have `is_forecast = true`; a day becomes `false` once it has passed and was loaded again.
 - `bookings.status` is `'booked'`, `'completed'`, `'no_show'` or `'cancelled'`.
-  `visit_date` is the service day (the day the shift started).
-- `forecast_overrides.servers` / `cooks` may be null, meaning "keep the forecast's number".
+  `visit_date` is the service day (the day the shift started). The book includes walk-ins, as
+  the restaurant's own book does: a walk-in is a booking made at the moment the party arrives.
+- A receipt belongs to the evening it was opened on; anything before 06:00 counts for the evening
+  before.
+- Every staff column in `forecast_overrides` may be null, meaning "keep the forecast's number".
   The database fills `updated_by` and `updated_at` itself on every insert and update.
 
 ## Never traded for speed
@@ -96,6 +138,7 @@ How the lock is built (keep it this way when adding tables):
 - Nobody but the nightly job (secret key) can touch `bookings` and `receipts`.
 - The nightly job can read `forecast_overrides` but has no right to write it, so it can never
   overwrite a manager's override.
+- `staffing_rules_retired` is closed to everyone, the nightly job included.
 - New tables get no rights automatically. Every new table needs RLS, policies and explicit grants
   in its migration, and a matching check in `supabase/tests/rls_lock.sql`.
 
@@ -140,12 +183,35 @@ Run everything from the repo root. `pip install -r forecast/requirements-dev.txt
   Open-Meteo into `daily_weather` for every restaurant. `--history-days N` loads less,
   `--expect-unchanged` fails if the run added rows. Safe to run again: it inserts-or-updates on
   `restaurant_id, date`.
+- `python -m forecast.fake_history` is the **fake booking system**: it fills `bookings` and
+  `receipts` with made-up evenings built on the real weather, from a fixed seed. The same evening
+  always comes out the same. Run a day later, it adds what "happened" since. An evening that has
+  receipts is never changed again. `--rebuild` deletes the restaurant's bookings and receipts
+  first. **Fake data only: take it out of the nightly job before real bookings are imported.**
+- `forecast/baseline.py` is the baseline forecast: the average of the same weekday over the last
+  6 weeks, plus the difference between the guests already booked and what was booked at the same
+  distance for those 6 evenings (kept within half the average).
+- `python -m forecast.predict` writes the next 14 evenings to `forecasts`: guests from the
+  baseline, staff from `staffing_rules`.
+- `python -m forecast.backtest` replays the last 3 months at 1, 3, 7 and 14 days ahead and
+  compares our forecast with the manager's plan. With `--offline WEATHER_CSV --report-dir
+  forecast/reports` it needs no database and writes `forecast/reports/baseline_backtest.md` and
+  `.json`. A test fails if the saved report is not what the code produces.
+- `python -m forecast.nightly --fake-feed` is the nightly job: weather, fake bookings, forecast,
+  in that order. It stops at the first failing step and exits with an error.
+- **Days ahead** are counted as the nightly job writes them: day 1 is the evening of the day the
+  job runs (it runs in the night), day 14 is thirteen days later.
+- The backtest numbers are on fake history. The fake evenings sit about 30% below the manager's
+  plan on every weekday, because the one real Friday (174 guests against 250 planned) says so.
+  That is an assumption for the other days. Say this whenever the benchmark comparison is shown.
 
 Workflows:
 
+- `nightly.yml` ("Nightly forecast"): the nightly job at 01:00 UTC, with a "Run workflow"
+  button. When started by hand or by a pull request it also runs a second time (must add no
+  rows) and runs the backtest on the database.
 - `forecast-tests.yml`: the tests, plus one job that asks the real Open-Meteo (no keys).
-- `weather.yml` ("Load weather"): the real load, run twice; the second run must add nothing.
-  Has a "Run workflow" button and also runs on pull requests that change the weather code.
+- `weather.yml` ("Load weather"): loads the full two years of weather. By hand only.
 - `lock-check.yml`: see Database commands.
 
 Good to know when working from the cloud sandbox:
