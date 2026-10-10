@@ -1,0 +1,37 @@
+name: Weather samples (temporary)
+
+# Temporary helper: fetches two small real answers from Open-Meteo and shows them on the run
+# page, so they can be saved as test samples. Needs no secrets and writes nothing.
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/weather-samples.yml"
+
+permissions: {}
+
+jobs:
+  fetch:
+    name: Fetch small sample answers from Open-Meteo
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - name: Fetch and show
+        run: |
+          set -euo pipefail
+          today="$(TZ=Europe/Amsterdam date +%F)"
+          yesterday="$(TZ=Europe/Amsterdam date -d 'yesterday' +%F)"
+          start="$(TZ=Europe/Amsterdam date -d '10 days ago' +%F)"
+          daily="temperature_2m_max,precipitation_sum,wind_speed_10m_max,sunshine_duration"
+          place="latitude=52.2066&longitude=6.8914&timezone=Europe%2FAmsterdam"
+          show() {
+            body="$(curl -sS -m 30 -w '\n%{http_code}' "$2")"
+            status="${body##*$'\n'}"
+            body="${body%$'\n'*}"
+            body="${body//'%'/'%25'}"; body="${body//$'\n'/'%0A'}"; body="${body//$'\r'/'%0D'}"
+            echo "::notice title=$1 (HTTP $status, today $today)::$body"
+          }
+          show "archive" "https://archive-api.open-meteo.com/v1/archive?$place&start_date=$start&end_date=$yesterday&daily=$daily"
+          show "forecast" "https://api.open-meteo.com/v1/forecast?$place&daily=$daily&past_days=10&forecast_days=14"
+          show "archive two years ago" "https://archive-api.open-meteo.com/v1/archive?$place&start_date=2024-10-08&end_date=2024-10-10&daily=$daily"
+          show "error example" "https://api.open-meteo.com/v1/forecast?$place&daily=not_a_variable"
