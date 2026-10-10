@@ -1,0 +1,59 @@
+name: Nightly forecast
+
+# Every night: load the weather, bring the (fake) bookings up to date, make the 14-day forecast
+# and write it to the forecasts table. If any step fails, the run fails and GitHub emails you.
+# It never writes forecast_overrides: the secret key it uses has no right to.
+#
+# Runs by itself at 01:00 UTC (about 03:00 in Amsterdam). Scheduled runs only happen once this
+# file is on the main branch. GitHub may start a scheduled run some minutes late.
+# Start it by hand: Actions > Nightly forecast > Run workflow.
+# It also runs when a pull request changes the forecast code, as a real-life test. That is fine
+# for the test project. Remove the pull_request part, and the --fake-feed option, before this
+# ever points at a project with real data.
+
+on:
+  schedule:
+    - cron: "0 1 * * *"
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "forecast/**"
+      - ".github/workflows/nightly.yml"
+
+permissions:
+  contents: read
+
+# Never two jobs writing to the database at the same time.
+concurrency:
+  group: database-writes
+  cancel-in-progress: false
+
+jobs:
+  nightly:
+    name: Weather, bookings, forecast
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SECRET_KEY: ${{ secrets.SUPABASE_SECRET_KEY }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+          cache: pip
+          cache-dependency-path: forecast/requirements.txt
+      - name: Install the libraries
+        run: pip install -r forecast/requirements.txt
+      - name: Note the time, so the checks below can pretend it is the same moment
+        run: echo "AS_OF=$(date -u +%Y-%m-%dT%H:%M:%S+00:00)" >> "$GITHUB_ENV"
+      - name: Weather, bookings, forecast, write
+        run: python -m forecast.nightly --fake-feed --as-of "$AS_OF"
+      # The two checks below are skipped on the nightly schedule. They run when the job is
+      # started by hand or by a pull request.
+      - name: Run it again; a repeat run must not add a single row
+        if: github.event_name != 'schedule'
+        run: python -m forecast.nightly --fake-feed --as-of "$AS_OF" --expect-unchanged
+      - name: Backtest on the database, against the manager's plan
+        if: github.event_name != 'schedule'
+        run: python -m forecast.backtest --as-of "$AS_OF"

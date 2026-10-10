@@ -4,9 +4,8 @@ name: Load weather
 # a second time and fails if the second run added a single row.
 #
 # Start it by hand: Actions > Load weather > Run workflow.
-# It also runs by itself when a pull request changes the weather code, as a real-life test.
-# That is fine for the test project. Remove the pull_request part before this ever points at a
-# project with real data.
+# The nightly job loads the last 30 days and the forecast by itself. This one is for loading the
+# full two years again, for example into a new project.
 #
 # Uses the secret key from GitHub Secrets. The key is never printed.
 
@@ -16,20 +15,13 @@ on:
       history_days:
         description: "How many days back to load (731 = two years)"
         default: "731"
-  pull_request:
-    paths:
-      - "forecast/weather.py"
-      - "forecast/db.py"
-      - "forecast/settings.py"
-      - "forecast/report.py"
-      - "forecast/requirements.txt"
-      - ".github/workflows/weather.yml"
 
 permissions:
   contents: read
 
+# Never two jobs writing to the database at the same time.
 concurrency:
-  group: weather-load
+  group: database-writes
   cancel-in-progress: false
 
 jobs:
