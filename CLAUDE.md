@@ -154,7 +154,8 @@ Good to know when working from the cloud sandbox:
   read with `gh api repos/OWNER/REPO/check-runs/JOB_ID/annotations`.
 - Path filters on `pull_request` look at the whole pull request, so every push to an open pull
   request runs every workflow whose paths the pull request touches.
-- The "Run workflow" button only exists for workflows that are on `main`.
+- The "Run workflow" button only exists for workflows that are on `main`. A failed run can be
+  started again with `gh api -X POST repos/OWNER/REPO/actions/runs/RUN_ID/rerun-failed-jobs`.
 
 ## GitHub Secrets (added by Rebeka by hand, never pasted in chat)
 
