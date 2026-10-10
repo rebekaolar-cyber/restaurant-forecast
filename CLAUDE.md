@@ -69,6 +69,8 @@ Details the contract leaves open, as built in `supabase/migrations/`:
 - `role` is `'server'` or `'cook'`. `shift` is always `'dinner'`.
 - Staff = the larger of `min_staff` and guests / `guests_per_staff` rounded up.
 - Weather units: `temp_max` in °C, `rain_mm` in mm, `wind_max` in km/h, `sunshine_hours` in hours.
+  `rain_mm` is all precipitation of the day (Open-Meteo `precipitation_sum`). Today and later
+  have `is_forecast = true`; a day becomes `false` once it has passed and was loaded again.
 - `bookings.status` is `'booked'`, `'completed'`, `'no_show'` or `'cancelled'`.
   `visit_date` is the service day (the day the shift started).
 - `forecast_overrides.servers` / `cooks` may be null, meaning "keep the forecast's number".
@@ -121,6 +123,38 @@ How the lock is built (keep it this way when adding tables):
   They need only the project URL and the public key.
 - `.github/workflows/lock-check.yml` runs all three on every pull request that touches
   `supabase/`, and has a "Run workflow" button.
+
+## Forecast code (`forecast/`)
+
+Run everything from the repo root. `pip install -r forecast/requirements-dev.txt` first.
+
+- `python -m pytest forecast -q` runs the tests. They use real saved answers from Open-Meteo
+  (`forecast/tests/samples/`) and a throwaway Postgres with the real migrations and seed, used
+  as the nightly job's own database role, so rights are tested too. No network, no keys.
+- `forecast/db.py` is the only way forecast code talks to the database: read, count and
+  insert-or-update over the Supabase web API. In tests `LocalDatabase` (in
+  `forecast/tests/conftest.py`) stands in for it.
+- `forecast/report.py`: use `report.result` and `report.failure` for anything worth seeing on a
+  workflow run page. Never pass keys or personal data to them.
+- `python -m forecast.weather` loads two years of history and the 14-day forecast from
+  Open-Meteo into `daily_weather` for every restaurant. `--history-days N` loads less,
+  `--expect-unchanged` fails if the run added rows. Safe to run again: it inserts-or-updates on
+  `restaurant_id, date`.
+
+Workflows:
+
+- `forecast-tests.yml`: the tests, plus one job that asks the real Open-Meteo (no keys).
+- `weather.yml` ("Load weather"): the real load, run twice; the second run must add nothing.
+  Has a "Run workflow" button and also runs on pull requests that change the weather code.
+- `lock-check.yml`: see Database commands.
+
+Good to know when working from the cloud sandbox:
+
+- Workflow logs cannot be downloaded there. Results printed with `forecast/report.py` can be
+  read with `gh api repos/OWNER/REPO/check-runs/JOB_ID/annotations`.
+- Path filters on `pull_request` look at the whole pull request, so every push to an open pull
+  request runs every workflow whose paths the pull request touches.
+- The "Run workflow" button only exists for workflows that are on `main`.
 
 ## GitHub Secrets (added by Rebeka by hand, never pasted in chat)
 

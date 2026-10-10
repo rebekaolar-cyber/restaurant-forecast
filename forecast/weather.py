@@ -163,23 +163,18 @@ def build_rows(
     return rows
 
 
-def load_restaurant(
-    db: Database,
+def fetch_rows(
     session: requests.Session,
     restaurant: dict,
     *,
-    today: date | None = None,
+    today: date,
     history_days: int = DEFAULT_HISTORY_DAYS,
     sleep: Callable[[float], None] = time.sleep,
-) -> LoadSummary:
-    """Fetches, checks and writes the weather for one restaurant, then reads the table back."""
+) -> list[dict]:
+    """Asks Open-Meteo for one restaurant and returns the checked rows. Touches no database."""
     if history_days < 1:
         raise WeatherError("history-days must be at least 1")
-    restaurant_id = restaurant["id"]
-    today = today or datetime.now(ZoneInfo(restaurant["timezone"])).date()
     first_day = today - timedelta(days=history_days)
-    last_day = today + timedelta(days=FORECAST_DAYS - 1)
-
     place = {
         "latitude": restaurant["latitude"],
         "longitude": restaurant["longitude"],
@@ -197,7 +192,24 @@ def load_restaurant(
     recent = parse_daily(
         fetch_json(session, FORECAST_URL, {**place, "past_days": RECENT_DAYS, "forecast_days": FORECAST_DAYS}, sleep)
     )
-    rows = build_rows(restaurant_id, today, first_day, archive, recent)
+    return build_rows(restaurant["id"], today, first_day, archive, recent)
+
+
+def load_restaurant(
+    db: Database,
+    session: requests.Session,
+    restaurant: dict,
+    *,
+    today: date | None = None,
+    history_days: int = DEFAULT_HISTORY_DAYS,
+    sleep: Callable[[float], None] = time.sleep,
+) -> LoadSummary:
+    """Fetches, checks and writes the weather for one restaurant, then reads the table back."""
+    restaurant_id = restaurant["id"]
+    today = today or datetime.now(ZoneInfo(restaurant["timezone"])).date()
+    first_day = today - timedelta(days=history_days)
+    last_day = today + timedelta(days=FORECAST_DAYS - 1)
+    rows = fetch_rows(session, restaurant, today=today, history_days=history_days, sleep=sleep)
 
     mine = [("restaurant_id", "eq", restaurant_id)]
     rows_before = db.count("daily_weather", mine)
