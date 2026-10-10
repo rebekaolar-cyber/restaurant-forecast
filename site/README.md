@@ -134,7 +134,9 @@ Where the code is:
   login pages and the dashboard talk to Supabase; the public pages do not.
 - Fonts are files in `src/assets/fonts/` (both under the SIL Open Font
   License; the licence texts sit next to them).
-- No forms. Reserving happens in the restaurant's own booking system.
+- No booking form of our own. Every reserve button is a plain link to the
+  restaurant's TheFork booking page. The widget is not embedded, so nothing
+  from TheFork loads on these pages.
 - No secret keys in this folder, ever. It holds only the Supabase project
   URL and the public key.
 

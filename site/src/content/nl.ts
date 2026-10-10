@@ -27,7 +27,7 @@ export const nl = {
   reserve: {
     button: 'Reserveer een tafel',
     short: 'Reserveren',
-    note: `U reserveert in het reserveringssysteem op ${restaurant.currentWebsiteLabel}.`,
+    note: `U reserveert bij ${restaurant.bookingProvider}, het reserveringssysteem van het restaurant.`,
   },
 
   testBanner: {
@@ -155,7 +155,7 @@ export const nl = {
       {
         heading: 'Reserveren',
         paragraphs: [
-          `De knop “Reserveer een tafel” brengt u naar het reserveringssysteem op ${restaurant.currentWebsiteLabel}. De gegevens die u daar invult, worden door dat systeem verwerkt. Daarvoor geldt de privacyverklaring die u daar vindt.`,
+          `De knop “Reserveer een tafel” brengt u naar ${restaurant.bookingProvider}, het reserveringssysteem dat het restaurant gebruikt. De gegevens die u daar invult, worden door ${restaurant.bookingProvider} verwerkt. Daarvoor geldt de privacyverklaring van ${restaurant.bookingProvider}. Het reserveringssysteem staat niet op onze eigen pagina’s: pas wanneer u op de knop klikt, gaat u naar de website van ${restaurant.bookingProvider}.`,
         ],
       },
       {
