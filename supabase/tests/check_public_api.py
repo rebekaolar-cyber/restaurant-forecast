@@ -86,6 +86,18 @@ def fetch(url: str, key: str) -> tuple[int, str]:
         return error.code, error.read().decode("utf-8", "replace")
 
 
+def report(ok: bool, text: str) -> None:
+    """Prints one result. On GitHub it also shows up on the run's summary page."""
+    verdict = "PASS" if ok else "FAIL"
+    print(f"{verdict}  {text}")
+    if os.environ.get("GITHUB_ACTIONS") == "true":
+        print(f"::{'notice' if ok else 'error'} title={verdict}::{text}")
+        summary_file = os.environ.get("GITHUB_STEP_SUMMARY")
+        if summary_file:
+            with open(summary_file, "a", encoding="utf-8") as handle:
+                handle.write(f"- {'✅' if ok else '❌'} **{verdict}** {text}\n")
+
+
 def settings_from_env() -> tuple[str, str]:
     url = os.environ.get("SUPABASE_URL", "").rstrip("/")
     key = os.environ.get("SUPABASE_PUBLISHABLE_KEY", "")
@@ -103,7 +115,7 @@ def check_tables() -> int:
         status, body = fetch(f"{url}/rest/v1/{table}?select=*", key)
         ok, summary = judge_table(status, body)
         failures += 0 if ok else 1
-        print(f"{'PASS' if ok else 'FAIL'}  anonymous read of {table:<20} {summary}")
+        report(ok, f"anonymous read of {table}: {summary}")
     print(f"\n{len(TABLES) - failures} passed, {failures} failed")
     return 1 if failures else 0
 
@@ -112,12 +124,12 @@ def check_signup() -> int:
     url, key = settings_from_env()
     status, body = fetch(f"{url}/auth/v1/settings", key)
     ok, summary = judge_signup(status, body)
-    print(f"{'PASS' if ok else 'FAIL'}  {summary}")
     if not ok:
-        print(
-            "\nTo fix: Supabase dashboard > Authentication > Sign In / Providers > "
+        summary += (
+            ". To fix: Supabase dashboard > Authentication > Sign In / Providers > "
             "switch off 'Allow new users to sign up' > Save. Then run this check again."
         )
+    report(ok, summary)
     return 0 if ok else 1
 
 

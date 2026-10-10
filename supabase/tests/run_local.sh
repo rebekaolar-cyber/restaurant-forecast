@@ -84,6 +84,19 @@ passes="$(grep -c '^ PASS' <<<"$out" || true)"
 fails="$(grep -c '^ FAIL' <<<"$out" || true)"
 echo
 echo "$passes passed, $fails failed"
+
+# On GitHub, also show the result on the run's summary page.
+if [ "${GITHUB_ACTIONS:-}" = "true" ]; then
+  if [ "$fails" = "0" ] && [ "$passes" != "0" ]; then
+    echo "::notice title=PASS::lock test on a throwaway database: $passes passed, $fails failed"
+  else
+    echo "::error title=FAIL::lock test on a throwaway database: $passes passed, $fails failed"
+  fi
+  if [ -n "${GITHUB_STEP_SUMMARY:-}" ]; then
+    { echo "### Lock test: $passes passed, $fails failed"; echo '```'; echo "$out"; echo '```'; } >>"$GITHUB_STEP_SUMMARY"
+  fi
+fi
+
 if [ "$fails" != "0" ] || [ "$passes" = "0" ]; then
   exit 1
 fi
