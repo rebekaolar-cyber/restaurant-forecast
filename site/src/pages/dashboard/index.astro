@@ -1,0 +1,51 @@
+---
+// The dashboard. This file is only an empty frame: it holds no figures.
+// scripts/dashboard.ts checks the login first and only then fetches anything.
+import Staff from '../../layouts/Staff.astro';
+import Placeholder from '../../components/Placeholder.astro';
+import { staffText as t } from '../../content/nl.staff';
+
+const d = t.dashboard;
+---
+
+<Staff title={d.title}>
+  <button slot="actions" class="button button--small button--quiet" type="button" data-logout hidden>
+    {d.logout}
+  </button>
+
+  <noscript><p class="notice">{d.noscript}</p></noscript>
+
+  <p class="muted" data-checking role="status" hidden>{d.checking}</p>
+
+  <div class="notice" data-offline hidden>
+    <h2>{d.offlineTitle}</h2>
+    <p>{t.errors.network}</p>
+    <button class="button button--small" type="button" data-retry>{d.retry}</button>
+  </div>
+
+  <div class="dash" data-dashboard hidden>
+    <h1>{d.title}</h1>
+    <p class="who dot" data-restaurant hidden></p>
+
+    <p class="muted" data-state="loading" role="status">{d.loading}</p>
+
+    <div class="notice" data-state="empty" hidden>
+      <h2>{d.noRestaurantTitle}</h2>
+      <p>{d.noRestaurant}</p>
+    </div>
+
+    <div class="notice" data-state="error" role="alert" hidden>
+      <h2>{d.loadErrorTitle}</h2>
+      <p>{d.loadError}</p>
+      <button class="button button--small" type="button" data-retry>{d.retry}</button>
+    </div>
+
+    <div data-state="ready" hidden>
+      <Placeholder>{d.comingWanted}</Placeholder>
+    </div>
+  </div>
+
+  <script>
+    import '../../scripts/dashboard';
+  </script>
+</Staff>
