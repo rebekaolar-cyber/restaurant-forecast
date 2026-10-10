@@ -7,10 +7,13 @@ import { supabase } from './supabase';
 import {
   addDays,
   DAYS_SHOWN,
+  ROLES,
+  ROLES_BEFORE_ROSTER_COLUMNS,
   type ForecastRow,
   type OverrideAction,
   type OverrideRow,
   type Restaurant,
+  type Role,
   type WeatherRow,
 } from './forecast-days';
 
@@ -37,7 +40,33 @@ function fail(error: Failure, status: number): never {
   throw new DataError('refused', message);
 }
 
-const OVERRIDE_COLUMNS = 'date, shift, servers, cooks, note, updated_at';
+// The bar, runner and food columns were added to the contract later. Until
+// the database has them, asking for them fails with Postgres error 42703
+// ("column does not exist"). In that case ask again without them, and the
+// dashboard shows only the roles the database knows.
+const ROSTER_COLUMNS = 'bar_staff, runners, food_staff';
+const COLUMN_MISSING = '42703';
+
+const forecastColumns = (roster: boolean) =>
+  `date, shift, predicted_guests, servers, ${roster ? `${ROSTER_COLUMNS}, ` : ''}cooks, model, created_at`;
+const overrideColumns = (roster: boolean) =>
+  `date, shift, servers, ${roster ? `${ROSTER_COLUMNS}, ` : ''}note, updated_at`;
+
+type Answer = { data: unknown; error: Failure; status: number };
+
+/** Runs a read with the roster columns, and once more without them if the database lacks them. */
+async function readWithRoster<Row>(
+  run: (roster: boolean) => PromiseLike<Answer>,
+): Promise<{ rows: Row[]; roster: boolean }> {
+  let roster = true;
+  let answer = await run(roster);
+  if (answer.error?.code === COLUMN_MISSING) {
+    roster = false;
+    answer = await run(roster);
+  }
+  if (answer.error) fail(answer.error, answer.status);
+  return { rows: (answer.data ?? []) as Row[], roster };
+}
 
 /** The restaurant this login belongs to, or null when it is not linked to one yet. */
 export async function fetchRestaurant(): Promise<Restaurant | null> {
@@ -69,6 +98,8 @@ export type ForecastWindow = {
   forecasts: ForecastRow[];
   weather: WeatherRow[];
   overrides: OverrideRow[];
+  /** The roster roles this database can show and store, in roster order. */
+  roles: readonly Role[];
 };
 
 /**
@@ -79,13 +110,15 @@ export type ForecastWindow = {
 export async function fetchWindow(restaurantId: string, from: string): Promise<ForecastWindow> {
   const last = addDays(from, DAYS_SHOWN);
   const [forecasts, weather, overrides] = await Promise.all([
-    supabase
-      .from('forecasts')
-      .select('date, shift, predicted_guests, servers, cooks, model, created_at')
-      .eq('restaurant_id', restaurantId)
-      .gte('date', from)
-      .lte('date', last)
-      .order('date'),
+    readWithRoster<ForecastRow>((roster) =>
+      supabase
+        .from('forecasts')
+        .select(forecastColumns(roster))
+        .eq('restaurant_id', restaurantId)
+        .gte('date', from)
+        .lte('date', last)
+        .order('date'),
+    ),
     supabase
       .from('daily_weather')
       .select('date, temp_max, rain_mm, wind_max, sunshine_hours, is_forecast')
@@ -93,35 +126,39 @@ export async function fetchWindow(restaurantId: string, from: string): Promise<F
       .gte('date', from)
       .lte('date', last)
       .order('date'),
-    supabase
-      .from('forecast_overrides')
-      .select(OVERRIDE_COLUMNS)
-      .eq('restaurant_id', restaurantId)
-      .gte('date', from)
-      .lte('date', last)
-      .order('date'),
+    readWithRoster<OverrideRow>((roster) =>
+      supabase
+        .from('forecast_overrides')
+        .select(overrideColumns(roster))
+        .eq('restaurant_id', restaurantId)
+        .gte('date', from)
+        .lte('date', last)
+        .order('date'),
+    ),
   ]);
-  for (const result of [forecasts, weather, overrides]) {
-    if (result.error) fail(result.error, result.status);
-  }
+  if (weather.error) fail(weather.error, weather.status);
   return {
-    forecasts: (forecasts.data ?? []) as ForecastRow[],
+    forecasts: forecasts.rows,
     weather: ((weather.data ?? []) as WeatherRow[]).map(cleanWeather),
-    overrides: (overrides.data ?? []) as OverrideRow[],
+    overrides: overrides.rows,
+    // Both tables must have the new columns before the dashboard offers them.
+    roles: forecasts.roster && overrides.roster ? ROLES : ROLES_BEFORE_ROSTER_COLUMNS,
   };
 }
 
 /**
  * Carry out what the manager decided for one day and shift.
  * Returns the stored override, or null when the override was removed.
- * Only restaurant_id, date, shift, servers, cooks and note are sent; the
- * database itself records who changed it and when.
+ * Only restaurant_id, date, shift, the roster roles, cooks and note are sent;
+ * the database itself records who changed it and when. `cooks` is always
+ * sent empty: the kitchen is a fixed crew and is never overridden from here.
  */
 export async function applyOverride(
   restaurantId: string,
   date: string,
   shift: string,
   action: OverrideAction,
+  roles: readonly Role[],
 ): Promise<OverrideRow | null> {
   if (action.kind === 'remove') {
     const { error, status } = await supabase
@@ -133,21 +170,16 @@ export async function applyOverride(
     if (error) fail(error, status);
     return null;
   }
+  const staff: Partial<Record<Role, number | null>> = {};
+  for (const role of roles) staff[role] = action.staff[role] ?? null;
   const { data, error, status } = await supabase
     .from('forecast_overrides')
     .upsert(
-      {
-        restaurant_id: restaurantId,
-        date,
-        shift,
-        servers: action.servers,
-        cooks: action.cooks,
-        note: action.note,
-      },
+      { restaurant_id: restaurantId, date, shift, ...staff, cooks: null, note: action.note },
       { onConflict: 'restaurant_id,date,shift' },
     )
-    .select(OVERRIDE_COLUMNS)
+    .select(overrideColumns(roles.length > ROLES_BEFORE_ROSTER_COLUMNS.length))
     .single();
   if (error) fail(error, status);
-  return data as OverrideRow;
+  return data as unknown as OverrideRow;
 }
