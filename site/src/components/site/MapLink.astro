@@ -1,0 +1,35 @@
+---
+// A picture of the street with a pin, linking to Google Maps.
+// The picture is made once from OpenStreetMap and kept with the site, so no
+// map service loads on our pages (no cookies, no consent banner).
+import { Picture } from 'astro:assets';
+import { restaurant } from '../../content/restaurant';
+import { t, type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+
+interface Props {
+  lang: Lang;
+  wide?: boolean;
+}
+const { lang, wide = false } = Astro.props;
+const maps = import.meta.glob<{ default: ImageMetadata }>('../../assets/map/*.png', { eager: true });
+const img = Object.values(maps)[0]?.default;
+const c = copy[lang];
+---
+
+<a class="map" href={restaurant.mapUrl} rel="noopener">
+  {
+    img ? (
+      <Picture src={img} alt={c.mapAlt} widths={[400, 680, img.width].filter((w) => w <= img.width)} sizes={wide ? '(min-width: 54rem) 34rem, 100vw' : '21rem'} formats={['avif', 'webp']} loading="lazy" />
+    ) : (
+      <span class="ph" aria-hidden="true"><span class="ph__n">{c.mapToCome}</span></span>
+    )
+  }
+  <span class="map__mark">
+    <span class="map__label" dir="ltr">Habibi · {restaurant.street}</span>
+    <span class="sr-only">, {restaurant.city}: {t(lang, 'Open in Google Maps')}</span>
+    <svg class="map__pin" viewBox="0 0 24 32" aria-hidden="true"><path d="M12 31C5 21.5 1.5 15.4 1.5 11a10.5 10.5 0 0 1 21 0c0 4.4-3.5 10.5-10.5 20z"></path><circle cx="12" cy="11" r="3.8" fill="#231f20"></circle></svg>
+  </span>
+</a>
+<p class="map__credit">{c.mapCredit}: © <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a></p>
+<p class="map__link"><a class="link" href={restaurant.mapUrl} rel="noopener">{t(lang, 'Route plannen')}</a></p>

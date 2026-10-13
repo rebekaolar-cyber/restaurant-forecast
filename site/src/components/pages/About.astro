@@ -1,0 +1,77 @@
+---
+// About us: the restaurant's own words from the menu card, and the facts in short.
+import Site from '../../layouts/Site.astro';
+import Top from '../site/Top.astro';
+import Orn from '../site/Orn.astro';
+import ArchLine from '../site/ArchLine.astro';
+import { href, t, type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+import { restaurant } from '../../content/restaurant';
+import { restaurantLd } from '../../content/structured';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = copy[lang];
+const a = c.about;
+---
+
+<Site lang={lang} page="about" title={c.meta.about.title} description={c.meta.about.description} jsonLd={[restaurantLd(lang)]}>
+  <section class="room room--teal phead">
+    <Top lang={lang} page="about" />
+    <Orn turn />
+    <div class="wrap">
+      <h1>{t(lang, 'Over ons')}</h1>
+      <p class="lead">{a.lead}</p>
+    </div>
+  </section>
+
+  <section class="room room--sand" aria-labelledby="kaart-h">
+    <div class="wrap split">
+      <div class="prose rise">
+        <h2 class="eyebrow" id="kaart-h">{a.cardEyebrow}</h2>
+        {a.card.map((p, i) => <p class:list={{ lead: i === 0 }}>{p}</p>)}
+        <p><a class="btn" href={href(lang, 'menu')}>{t(lang, 'Bekijk het menu')}</a></p>
+      </div>
+      <div class="card-photo">
+        <figure class="arch">
+          <div class="arch__clip">
+            <span class="ph">
+              <span class="ph__n">{c.photoToCome}</span>
+              <span class="ph__t">{restaurant.name}</span>
+            </span>
+          </div>
+          <ArchLine />
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section class="room room--red" aria-labelledby="feiten-h">
+    <Orn />
+    <div class="wrap split">
+      <h2 class="display rise" id="feiten-h">{a.factsTitle}</h2>
+      <dl class="facts">
+        <div>
+          <dt>{a.facts.open[0]}</dt>
+          <dd>{a.facts.open[1]}</dd>
+        </div>
+        <div>
+          <dt>{a.facts.seats[0]}</dt>
+          <dd>{a.facts.seats[1]}</dd>
+        </div>
+        <div>
+          <dt>{a.facts.garden[0]}</dt>
+          <dd>{a.facts.garden[1]}</dd>
+        </div>
+        <div>
+          <dt>{a.facts.address}</dt>
+          <dd>
+            <address dir="ltr">{restaurant.street}, {restaurant.postcode} {restaurant.city}</address>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+</Site>

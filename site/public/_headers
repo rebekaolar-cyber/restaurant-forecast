@@ -1,14 +1,44 @@
-# Cloudflare Pages reads this file. Stage 4 adds the full security headers.
-# For now: keep the login and the dashboard out of search engines, also for
-# crawlers that only look at headers.
+# Security headers. Cloudflare Pages reads this file and adds these lines to
+# every answer it sends. They tell the visitor's browser what the site may do.
+#
+# Every rule whose address matches applies. A line starting with "!" removes a
+# header that a broader rule above set, so the staff pages can get their own
+# Content-Security-Policy instead of a mix of two.
 
+# ---- every page ----
+/*
+  # Only load scripts, styles, fonts and pictures from this site itself. No
+  # inline scripts, no inline styles, no outside services, no embedding in other sites.
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self'; manifest-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'; upgrade-insecure-requests
+  # Always use https for a year. Deliberately without includeSubDomains: other
+  # addresses under habibienschede.nl (e-mail, old systems) are not ours to force.
+  Strict-Transport-Security: max-age=31536000
+  X-Content-Type-Options: nosniff
+  X-Frame-Options: DENY
+  Referrer-Policy: strict-origin-when-cross-origin
+  Permissions-Policy: accelerometer=(), autoplay=(), camera=(), display-capture=(), encrypted-media=(), fullscreen=(), geolocation=(), gyroscope=(), magnetometer=(), microphone=(), midi=(), payment=(), publickey-credentials-get=(), screen-wake-lock=(), serial=(), usb=(), xr-spatial-tracking=(), browsing-topics=()
+  Cross-Origin-Opener-Policy: same-origin
+
+# Files with a fingerprint in their name never change: browsers may keep them a year.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable
+
+# ---- staff pages: login and dashboard ----
+# The same rules, plus the one connection they need: the Supabase project (EU).
+# Never in search engines, and they never tell another site where you came from.
 /login
   X-Robots-Tag: noindex, nofollow
 /login/*
-  X-Robots-Tag: noindex, nofollow
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://wuyqodgnnjoefaxepkiz.supabase.co; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  ! Referrer-Policy
   Referrer-Policy: no-referrer
+  X-Robots-Tag: noindex, nofollow
 /dashboard
   X-Robots-Tag: noindex, nofollow
 /dashboard/*
-  X-Robots-Tag: noindex, nofollow
+  ! Content-Security-Policy
+  Content-Security-Policy: default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; font-src 'self'; connect-src 'self' https://wuyqodgnnjoefaxepkiz.supabase.co; manifest-src 'self'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests
+  ! Referrer-Policy
   Referrer-Policy: no-referrer
+  X-Robots-Tag: noindex, nofollow

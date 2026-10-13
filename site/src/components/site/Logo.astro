@@ -1,0 +1,14 @@
+---
+// The Habibi wordmark, drawn from the brand file. The dots take the magenta.
+import { logoPaths } from '../../content/art';
+
+interface Props {
+  label?: string;
+}
+const { label } = Astro.props;
+const [word, dots, rest] = logoPaths;
+---
+
+<svg viewBox="44.91 185.45 352.1 100.43" role={label ? 'img' : undefined} aria-label={label} aria-hidden={label ? undefined : 'true'}>
+  <path d={word}></path><path class="dots" d={dots}></path><path d={rest}></path>
+</svg>

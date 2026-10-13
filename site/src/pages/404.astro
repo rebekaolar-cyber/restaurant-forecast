@@ -1,25 +1,27 @@
 ---
-import Base from '../layouts/Base.astro';
-import { nl as t } from '../content/nl';
+// Shown for any address that does not exist. Dutch first, with one line in English.
+import Site from '../layouts/Site.astro';
+import Top from '../components/site/Top.astro';
+import Orn from '../components/site/Orn.astro';
+import { href } from '../content/i18n';
+import { copy } from '../content/pages';
 
-const page = t.notFound;
+const nl = copy.nl.notFound;
+const en = copy.en.notFound;
 ---
 
-<Base title={page.title} noindex>
-  <div class="wrap page-head">
-    <h1>{page.heading}</h1>
-  </div>
-  <div class="wrap body">
-    <p class="lead">{page.text}</p>
-    <p><a class="button" href="/">{page.home}</a></p>
-  </div>
-</Base>
-
-<style>
-  .body {
-    display: grid;
-    justify-items: start;
-    gap: 2rem;
-    padding-bottom: var(--section);
-  }
-</style>
+<Site lang="nl" page="notFound" title={copy.nl.meta.notFound.title}>
+  <section class="room room--teal phead lost">
+    <Top lang="nl" page="notFound" />
+    <Orn turn />
+    <div class="wrap stack">
+      <h1>{nl.heading}</h1>
+      <p class="lead">{nl.text}</p>
+      <p class="lost__en" lang="en">{en.heading}. {en.text}</p>
+      <p class="lost__links">
+        <a class="btn" href={href('nl', 'home')}>{nl.home}</a>
+        <a class="btn btn--ghost" href={href('en', 'home')} lang="en">{en.home}</a>
+      </p>
+    </div>
+  </section>
+</Site>

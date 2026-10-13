@@ -1,0 +1,156 @@
+---
+// The homepage: the entrance door, the lamps, the menu in four photos and the binnentuin.
+import { Picture } from 'astro:assets';
+import Site from '../../layouts/Site.astro';
+import Top from '../site/Top.astro';
+import Orn from '../site/Orn.astro';
+import ArchLine from '../site/ArchLine.astro';
+import { doorArt, doorLeaf, blossom } from '../../content/art';
+import { href, t, type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+import { restaurantLd } from '../../content/structured';
+import warme from '../../assets/photos/home/warme-maza.jpg';
+import koude from '../../assets/photos/home/koude-maza.jpg';
+import hoofd from '../../assets/photos/home/hoofdgerechten.jpg';
+import na from '../../assets/photos/home/nagerechten.jpg';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = copy[lang];
+const menu = href(lang, 'menu');
+
+// The four photos and where each opens the menu. Category and section ids are the same in every language.
+const tiles = [
+  { img: warme, target: 'warme-maza', title: t(lang, 'Warme maza') },
+  { img: koude, target: 'koude-maza', title: t(lang, 'Koude maza') },
+  { img: hoofd, target: 'hoofdgerechten', title: t(lang, 'Hoofdgerechten') },
+  { img: na, target: 'nagerechten', title: t(lang, 'Desserts') },
+];
+const lamps = [
+  { n: 1, kind: 'globe' },
+  { n: 2, kind: 'lantern' },
+  { n: 3, kind: 'globe' },
+  { n: 4, kind: 'globe' },
+  { n: 5, kind: 'globe' },
+  { n: 6, kind: 'globe' },
+  { n: 7, kind: 'globe' },
+];
+const welcome = t(lang, 'Welkom');
+const toHabibi = t(lang, 'bij Habibi');
+---
+
+<Site lang={lang} page="home" title={c.meta.home.title} description={c.meta.home.description} bareTitle jsonLd={[restaurantLd(lang)]}>
+  <section class="hero">
+    <Top lang={lang} page="home" />
+    <div class="hero__stage">
+      <Orn />
+      <h1 class="hero__title">
+        <span class="sr-only">{t(lang, 'Welkom bij Habibi')}</span>
+        <span class="fill l1" aria-hidden="true"><span class="fill__ghost">{welcome}</span><span class="fill__ink">{welcome}</span></span>
+        <span class="fill l2" aria-hidden="true"><span class="fill__ghost">{toHabibi}</span><span class="fill__ink">{toHabibi}</span></span>
+      </h1>
+      <figure class="door" aria-hidden="true">
+        <Fragment set:html={doorArt} />
+        <div class="door__way">
+          <div class="door__inside"></div>
+          <div class="door__leaf"><Fragment set:html={doorLeaf} /></div>
+        </div>
+      </figure>
+      <div class="hero__veil" aria-hidden="true"></div>
+      <a class="hero__scroll" href="#binnen">
+        {t(lang, 'Scroll naar beneden')}
+        <svg viewBox="0 0 16 22" aria-hidden="true"><path d="M8 1v19M2 14l6 6 6-6"></path></svg>
+      </a>
+      <p class="hero__tag" lang="en">The taste of Lebanon</p>
+    </div>
+  </section>
+
+  <section class="room room--teal welcome" id="binnen">
+    <div class="lamps" aria-hidden="true">
+      {
+        lamps.map(({ n, kind }) => (
+          <figure class:list={['lamp', `lamp--${kind}`, `lamp--${n}`]}>
+            <svg viewBox={kind === 'lantern' ? '0 0 100 190' : '0 0 100 130'}>
+              <use href={`#${kind}`} />
+            </svg>
+          </figure>
+        ))
+      }
+    </div>
+    <div class="wrap welcome__corner">
+      <div class="stack rise">
+        <h2 class="display">{t(lang, 'Heerlijk uitgebreid tafelen?')}</h2>
+        <p class="lead">{t(lang, 'Dat doe je bij Habibi.')}</p>
+        <p class="body">{t(lang, 'Geniet van de smaken van het Midden-Oosten, bereid volgens traditionele recepten die generaties lang zijn doorgegeven.')}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="room room--sand maza" aria-labelledby="maza-h">
+    <div class="wrap">
+      <div class="maza__head rise">
+        <h2 class="eyebrow" id="maza-h">{t(lang, 'De Libanese menukaart')}</h2>
+        <a class="btn" href={menu}>
+          {t(lang, 'Bekijk het menu')}
+          <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg>
+        </a>
+      </div>
+      <ul class="tiles">
+        {
+          tiles.map(({ img, target, title }) => (
+            <li>
+              <a class="tile" href={`${menu}#${target}`}>
+                <span class="arch tile__pic">
+                  <span class="arch__clip tile__clip">
+                    <span class="tile__light" />
+                    {['l', 'r'].map((side) => (
+                      <span class={`leaf leaf--${side}`}>
+                        <Picture src={img} alt="" widths={[img.width]} sizes="(min-width: 54rem) 21rem, 45vw" formats={['avif', 'webp']} loading="lazy" />
+                      </span>
+                    ))}
+                  </span>
+                  <ArchLine />
+                </span>
+                <span class="tile__title">
+                  {title}
+                  <svg viewBox="0 0 18 18" aria-hidden="true"><path d="M2 9h13M10 4l5 5-5 5"></path></svg>
+                </span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </div>
+  </section>
+
+  <section class="room room--red garden" aria-labelledby="tuin-h">
+    <Orn turn />
+    <div class="wrap">
+      <div class="garden__branch"><Fragment set:html={blossom} /></div>
+      <div class="garden__head">
+        <div class="stack rise">
+          <p class="eyebrow">{t(lang, 'Binnen of buiten')}</p>
+          <h2 class="display" id="tuin-h">{t(lang, 'De Binnentuin')}</h2>
+        </div>
+        <p class="lead rise">{t(lang, 'De binnentuin is het hele jaar open. Hier kun je ook shisha roken.')}</p>
+      </div>
+      <div class="arcade">
+        {
+          [1, 2, 3].map((n) => (
+            <figure class:list={['arch', 'wipe', n > 1 && `wipe--${n}`]}>
+              <div class="arch__clip">
+                <span class="ph">
+                  <span class="ph__n">{c.photoToCome}</span>
+                  {n === 2 && <span class="ph__t">{t(lang, 'De Binnentuin')}</span>}
+                </span>
+              </div>
+              <ArchLine />
+            </figure>
+          ))
+        }
+      </div>
+    </div>
+  </section>
+</Site>

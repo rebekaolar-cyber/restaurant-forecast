@@ -2,7 +2,7 @@
 
 The public website and the manager's dashboard behind a login. Built with
 [Astro](https://astro.build) as a static site: the build produces plain HTML,
-CSS and one small script, and Cloudflare Pages serves those files.
+CSS and a few small scripts, and Cloudflare Pages serves those files.
 
 Everything for the website lives in this `site/` folder. The forecast, the
 database and the nightly job live elsewhere in the repo and are not touched
@@ -22,24 +22,92 @@ npm run check      # type check
 npm test           # unit tests for the dashboard's date and save logic
 ```
 
+## Pages and languages
+
+Every public page exists in Dutch, English, German and Arabic. Dutch lives at
+the plain address, the others under `/en/`, `/de/` and `/ar/` (Arabic reads
+right to left). The header links to the same page in the other languages.
+
+| Page | Dutch | English | German | Arabic |
+|---|---|---|---|---|
+| Home | `/` | `/en/` | `/de/` | `/ar/` |
+| Menu | `/menu/` | `/en/menu/` | `/de/speisekarte/` | `/ar/menu/` |
+| About | `/over-ons/` | `/en/about/` | `/de/ueber-uns/` | `/ar/about/` |
+| Contact | `/contact/` | `/en/contact/` | `/de/kontakt/` | `/ar/contact/` |
+| Privacy | `/privacy/` | `/en/privacy/` | `/de/datenschutz/` | `/ar/privacy/` |
+
+One file, `src/pages/[...path].astro`, builds all twenty from the list in
+`src/content/i18n.ts`. The page designs are in `src/components/pages/`, the
+shared parts (header, footer, hours, map, door) in `src/components/site/`.
+
+Moving between pages plays the green double door (a browser "view
+transition", CSS only). Switching language only cross-fades. Browsers without
+this feature simply load the next page.
+
+The menu page has a switch "Met foto's / Alleen tekst": the same card with
+the dish photos, or as a plain list for guests who only want to read. On a
+phone, tapping a photo shows the description and allergy marks.
+
 ## Where to change things
 
 | What | File |
 |---|---|
-| Name, address, booking link, map link, phone, e-mail, seats | `src/content/restaurant.ts` |
+| Name, address, booking link, map link, phone, e-mail, socials, seats | `src/content/restaurant.ts` |
 | Opening hours (pages, footer and the "open today" line all read this) | `src/content/hours.ts` |
-| The menu | `src/content/menu.ts` |
-| Every Dutch sentence on the pages | `src/content/nl.ts` and `src/content/nl.status.ts` |
-| Photos | put files in `src/assets/photos/`, then fill the slot in `src/content/photos.ts` |
-| Colours, type, spacing | the `:root` block at the top of `src/styles/global.css` |
+| The menu: dishes, prices, descriptions in four languages, photos | `src/content/menu.ts` |
+| Short interface words (buttons, menu headings, day names) | `src/content/strings.ts` |
+| Page texts (about, contact, privacy, page titles for search engines) | `src/content/pages.ts` |
+| Dish photos | `src/assets/photos/dishes/`, then the dish's `photo` field in `menu.ts` |
+| Colours, type, spacing | the `:root` block at the top of `src/styles/site.css` |
+| The picture shown when a page is shared | `public/og.jpg`, made by `node tools/make-og.mjs` |
 
-Anything shown hatched with a dashed edge and the word "Placeholder" is
-waiting for real content. A placeholder disappears by itself once its content
-is filled in: a phone number in `restaurant.ts`, menu sections in `menu.ts`,
-a photo in `photos.ts`.
+The English, German and Arabic texts are our own translations and still need
+a check by a native speaker.
 
-Never invent dishes, prices or opening hours. If it is not known, leave the
-placeholder.
+Anything shown hatched with a dashed edge ("Foto volgt", "Kaart volgt",
+"TODO") is waiting for real content. Never invent dishes, prices or opening
+hours. If it is not known, leave the placeholder.
+
+`menu.ts`, `strings.ts` and `art.ts` were generated once from the design
+preview. Edit them here directly from now on.
+
+## The map
+
+The map in the footer and on the contact page is a picture kept with the
+site, so no map service loads on our pages. Until it is made, a marked
+"Kaart volgt" placeholder shows. To add it: export a PNG of the street from
+openstreetmap.org (Share → Image, about 1200 × 900), save it as
+`src/assets/map/map.png`, and rebuild. The pin and the credit line are drawn
+by the site.
+
+## Security headers
+
+`public/_headers` tells every visitor's browser what the site may do. The
+public pages may load nothing from other websites: no scripts, no styles, no
+fonts, no pictures, no connections (`Content-Security-Policy`). They cannot be
+shown inside another website, always use https, and do not get access to the
+camera, microphone or location. The login and dashboard get the same rules
+plus one connection: the Supabase project. Only `!` lines in that file remove
+a header for those two pages, so the two policies never mix.
+
+Because of this policy the HTML has no inline scripts and no `style="..."`
+attributes. Keep it that way: put styles in `src/styles/` and scripts in
+`src/scripts/`. A new outside service (for example an embedded video) will
+not work until it is added to `_headers` on purpose.
+
+`public/_redirects` sends the old booking address `/reserveren/` straight to
+TheFork.
+
+To see the headers locally exactly as Cloudflare sends them:
+`npx wrangler pages dev dist` after a build.
+
+## Search engines
+
+Each page has a title and description in its language, a canonical address,
+links to its other languages (`hreflang`), a sharing picture, and structured
+data (schema.org) with the address, opening hours, booking link and the full
+menu with prices. `/sitemap.xml` lists every page in every language.
+`/robots.txt` keeps search engines out while the site is a test version.
 
 ## Test version and live version
 
@@ -151,9 +219,11 @@ Where the code is:
 ## Privacy rules this site keeps
 
 - No tracking, no cookies, no scripts or fonts from other parties. Only the
-  login pages and the dashboard talk to Supabase; the public pages do not.
-- Fonts are files in `src/assets/fonts/` (both under the SIL Open Font
-  License; the licence texts sit next to them).
+  login pages and the dashboard talk to Supabase; the public pages do not,
+  and the security headers enforce that.
+- Fonts are files in `src/assets/fonts/` (all under the SIL Open Font
+  License; the licence texts sit next to them), including Amiri and Noto Sans
+  Arabic for the Arabic pages.
 - No booking form of our own. Every reserve button is a plain link to the
   restaurant's TheFork booking page. The widget is not embedded, so nothing
   from TheFork loads on these pages.
