@@ -24,6 +24,7 @@ export const restaurant = {
   facebook: 'https://www.facebook.com/HabibiLibaneesRestaurant',
   tiktok: 'https://www.tiktok.com/@habibi_enschede',
   seats: { restaurant: 120, binnentuin: 134 },
-  // Where the building is, from OpenStreetMap. Used by search engines; null until looked up.
-  geo: null as { latitude: number; longitude: number } | null,
+  // Where the restaurant is, from OpenStreetMap (the map entry "Habibi", Wethouder Beversstraat 185).
+  // Used by search engines and for the map picture.
+  geo: { latitude: 52.2067135, longitude: 6.8916213 } as { latitude: number; longitude: number } | null,
 } as const;

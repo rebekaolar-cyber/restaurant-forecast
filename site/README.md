@@ -74,11 +74,12 @@ preview. Edit them here directly from now on.
 ## The map
 
 The map in the footer and on the contact page is a picture kept with the
-site, so no map service loads on our pages. Until it is made, a marked
-"Kaart volgt" placeholder shows. To add it: export a PNG of the street from
-openstreetmap.org (Share → Image, about 1200 × 900), save it as
-`src/assets/map/map.png`, and rebuild. The pin and the credit line are drawn
-by the site.
+site (`src/assets/map/habibi-map.png`), so no map service loads on our pages.
+It was made from OpenStreetMap at zoom level 17, centred on the restaurant's
+own OpenStreetMap entry (52.20671, 6.89162). The pin and the credit line are
+drawn by the site. Clicking the map or "Route plannen" opens Google Maps.
+To change the map, replace the PNG (about 800 × 600, the restaurant in the
+middle) and rebuild. The credit "© OpenStreetMap contributors" must stay.
 
 ## Security headers
 
