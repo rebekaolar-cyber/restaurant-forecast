@@ -1,0 +1,230 @@
+---
+// The menu page: one paper sheet per part of the card. Every dish has its photo in
+// an arch (or a marked "photo to come"); a switch at the top shows the same card as
+// text only, for guests who don't need the photos. No script: the switch and the
+// tap-to-read on a dish are plain form controls styled with CSS.
+import { Picture } from 'astro:assets';
+import Site from '../../layouts/Site.astro';
+import Top from '../site/Top.astro';
+import Orn from '../site/Orn.astro';
+import ArchLine from '../site/ArchLine.astro';
+import { href, t, type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+import { categories, type Dish, type Icon, type Section } from '../../content/menu';
+import { restaurantLd, menuLd } from '../../content/structured';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = copy[lang];
+
+const photos = import.meta.glob<{ default: ImageMetadata }>('../../assets/photos/dishes/*.jpg', { eager: true });
+const photoOf = (name?: string) => (name ? photos[`../../assets/photos/dishes/${name}.jpg`]?.default : undefined);
+
+const ICONS: Record<Icon, string> = { gf: 'Glutenvrij', veg: 'Vegetarisch', vegan: 'Vegan' };
+
+/** Split a card text on "{?}" (a word the card photo did not show) so it can be marked. */
+const parts = (text: string) => text.split('{?}');
+
+type Row = { kind: 'dishes'; sec: Section; titled: boolean } | { kind: 'items'; sec: Section } | { kind: 'pair'; secs: Section[] };
+
+function rows(catId: string, sections: (Section | Section[])[]): Row[] {
+  const lone = sections.length === 1;
+  return sections.map((s) => {
+    if (Array.isArray(s)) return { kind: 'pair', secs: s };
+    if (catId === 'dranken') return { kind: 'items', sec: s };
+    return { kind: 'dishes', sec: s, titled: !lone };
+  });
+}
+
+/** The three surprise menus have no dish names on the card: their titles name the dishes. */
+const surprise = (id: string) => id === 'verrassingsmenus';
+const menuTitle = t(lang, 'Menu');
+const viewLabel = t(lang, 'Weergave van de kaart');
+const photoIcon = '<svg viewBox="0 0 18 18" aria-hidden="true"><rect x="2" y="3.5" width="14" height="11" rx="1.5"/><circle cx="6.3" cy="7.3" r="1.3"/><path d="M2.5 13.2 7 9.5l3 2.6 2.2-1.8 3.3 2.9"/></svg>';
+const listIcon = '<svg viewBox="0 0 18 18" aria-hidden="true"><path d="M3 4.5h12M3 9h12M3 13.5h8"/></svg>';
+type DishView = { dish: Dish; id: string; name: string; title?: boolean };
+---
+
+<Site lang={lang} page="menu" title={c.meta.menu.title} description={c.meta.menu.description} jsonLd={[restaurantLd(lang), menuLd(lang)]}>
+  <input class="view-radio" type="radio" name="view" id="view-photo" checked aria-label={t(lang, 'Met foto’s')} />
+  <input class="view-radio" type="radio" name="view" id="view-list" aria-label={t(lang, 'Alleen tekst')} />
+
+  <section class="room room--teal mhead">
+    <Top lang={lang} page="menu" />
+    <Orn turn />
+    <div class="wrap">
+      <h1 aria-label={menuTitle}>
+        <span class="fill" aria-hidden="true"><span class="fill__ghost">{menuTitle}</span><span class="fill__ink">{menuTitle}</span></span>
+      </h1>
+      <div class="mhead__row">
+        <div class="stack">
+          <p class="lead">{t(lang, 'De Libanese menukaart van Habibi.')}</p>
+          <p class="mhead__euro">{c.pricesInEuro}</p>
+        </div>
+        <p class="kaart__legend">
+          <span class="kaart__legend-t">{t(lang, 'Allergieinformatie:')}</span>
+          {
+            (Object.keys(ICONS) as Icon[]).map((k) => (
+              <span>
+                <svg class="ic" aria-hidden="true"><use href={`#ic-${k}`} /></svg>
+                {t(lang, ICONS[k])}
+              </span>
+            ))
+          }
+        </p>
+      </div>
+      <div class="mhead__view">
+        <div class="viewpick" role="group" aria-label={viewLabel}>
+          <label for="view-photo"><Fragment set:html={photoIcon} />{t(lang, 'Met foto’s')}</label>
+          <label for="view-list"><Fragment set:html={listIcon} />{t(lang, 'Alleen tekst')}</label>
+        </div>
+        <p class="mhead__hint">{t(lang, 'Ga met de muis over een foto voor de omschrijving en allergieën. Op de telefoon: tik op de foto.')}</p>
+      </div>
+    </div>
+  </section>
+
+  <nav class="mnav" aria-label={c.menuParts}>
+    <div class="mnav__in">
+      <ul>
+        <li>
+          <a class="mnav__home" href={href(lang, 'home')}>
+            <svg class="back" viewBox="0 0 18 18" aria-hidden="true"><path d="M16 9H3M8 4 3 9l5 5" fill="none" stroke="currentColor" stroke-width="1.6"></path></svg>
+            {t(lang, 'Home')}
+          </a>
+        </li>
+        {categories.map((cat) => <li><a href={`#${cat.id}`}>{cat.label[lang]}</a></li>)}
+      </ul>
+      <div class="viewpick viewpick--bar" role="group" aria-label={viewLabel}>
+        <label for="view-photo"><Fragment set:html={photoIcon} /><span class="viewpick__t">{t(lang, 'Met foto’s')}</span></label>
+        <label for="view-list"><Fragment set:html={listIcon} /><span class="viewpick__t">{t(lang, 'Alleen tekst')}</span></label>
+      </div>
+    </div>
+  </nav>
+
+  {
+    categories.map((cat) => {
+      const dishView = ({ dish, id, name, title = false }: DishView) => {
+        const img = photoOf(dish.photo);
+        return (
+          <li class="dish">
+            <input class="dish__toggle" type="checkbox" id={id} aria-label={`${name}: ${t(lang, 'Info over dit gerecht')}`} />
+            <label class="dish__card" for={id}>
+              <span class="arch dish__pic">
+                <span class="arch__clip">
+                  {img ? (
+                    <Picture src={img} alt="" widths={[img.width]} sizes="(min-width: 66rem) 14rem, 44vw" formats={['avif', 'webp']} loading="lazy" class="dish__img" />
+                  ) : (
+                    <span class="ph dish__ph">
+                      <span class="ph__n">{c.photoToCome}</span>
+                      <span class="ph__t">{name}</span>
+                    </span>
+                  )}
+                  <span class="dish__info">
+                    {dish.desc && (
+                      <span class="dish__desc">
+                        {parts(dish.desc[lang]).map((p, i) => (i === 0 ? p : [<span class="unread">{c.priceUnread}</span>, p]))}
+                      </span>
+                    )}
+                    {dish.icons.length > 0 && (
+                      <span class="dish__ics">
+                        {dish.icons.map((k) => (
+                          <span class="dish__ic">
+                            <svg class="ic" aria-hidden="true"><use href={`#ic-${k}`} /></svg>
+                            {t(lang, ICONS[k])}
+                          </span>
+                        ))}
+                      </span>
+                    )}
+                  </span>
+                </span>
+                <ArchLine />
+                <span class="dish__more" aria-hidden="true">
+                  <svg class="dish__i" viewBox="0 0 16 16"><circle cx="8" cy="4.3" r="1.25"></circle><path d="M6.4 7h2.4v5.2h1.2"></path></svg>
+                  <svg class="dish__x" viewBox="0 0 16 16"><path d="M4.5 4.5l7 7M11.5 4.5l-7 7"></path></svg>
+                </span>
+              </span>
+              <span class:list={['dish__name', { 'dish__name--title': title }]}>
+                <span class="dish__n">{name}</span>
+                <span class="item__price">{dish.price ?? <span class="unread">?</span>}</span>
+              </span>
+            </label>
+          </li>
+        );
+      };
+      const note = (s: Section) =>
+        s.note && (
+          <p class="kaart__note">
+            {parts(s.note[lang]).map((p, i) => (i === 0 ? p : [<span class="unread">{c.priceUnread}</span>, p]))}
+          </p>
+        );
+      const items = (s: Section) => (
+        <ul class="items items--cols items--compact">
+          {s.items.map((it) => (
+            <li class="item">
+              <p class="item__head">
+                <span class="item__name">
+                  {it.name}
+                  {it.small && (
+                    <>
+                      {' '}
+                      <small>{it.small[lang]}</small>
+                    </>
+                  )}
+                </span>
+                <span class="item__price">{it.price ?? <span class="unread">?</span>}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      );
+      return (
+        <section class={`room room--${cat.ground} mcat`} id={cat.id} aria-labelledby={`${cat.id}-h`}>
+          <div class="wrap">
+            <article class:list={['kaart', { 'kaart--list': cat.id === 'dranken' }]}>
+              <header class="kaart__head">
+                <h2 class="kaart__title" id={`${cat.id}-h`}>{cat.label[lang]}</h2>
+                <span class="kaart__rule" aria-hidden="true"></span>
+              </header>
+              {surprise(cat.id) ? (
+                <section class="kaart__sec">
+                  <ul class="dishes dishes--three">
+                    {cat.sections.flat().map((s) => dishView({ dish: s.items[0], id: `d-${s.id}`, name: s.title[lang], title: true }))}
+                  </ul>
+                  {cat.sections.flat().map(note)}
+                </section>
+              ) : (
+                rows(cat.id, cat.sections).map((row) =>
+                  row.kind === 'pair' ? (
+                    <div class="kaart__pair">
+                      {row.secs.map((s) => (
+                        <section class="kaart__sec" id={s.id}>
+                          <h3>{s.title[lang]}</h3>
+                          {items(s)}
+                          {note(s)}
+                        </section>
+                      ))}
+                    </div>
+                  ) : (
+                    <section class="kaart__sec" id={row.sec.id}>
+                      {(row.kind === 'items' || row.titled) && <h3>{row.sec.title[lang]}</h3>}
+                      {row.kind === 'items' ? (
+                        items(row.sec)
+                      ) : (
+                        <ul class="dishes">
+                          {row.sec.items.map((d, k) => dishView({ dish: d, id: `d-${row.sec.id}-${k}`, name: d.name ?? row.sec.title[lang] }))}
+                        </ul>
+                      )}
+                      {note(row.sec)}
+                    </section>
+                  ),
+                )
+              )}
+            </article>
+          </div>
+        </section>
+      );
+    })
+  }
+</Site>

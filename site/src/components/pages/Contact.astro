@@ -1,0 +1,73 @@
+---
+// Contact: address, phone, e-mail, the booking link, the map and the opening hours.
+import Site from '../../layouts/Site.astro';
+import Top from '../site/Top.astro';
+import Orn from '../site/Orn.astro';
+import Hours from '../site/Hours.astro';
+import MapLink from '../site/MapLink.astro';
+import { t, type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+import { restaurant } from '../../content/restaurant';
+import { restaurantLd } from '../../content/structured';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = copy[lang];
+---
+
+<Site lang={lang} page="contact" title={c.meta.contact.title} description={c.meta.contact.description} jsonLd={[restaurantLd(lang)]}>
+  <section class="room room--teal phead">
+    <Top lang={lang} page="contact" />
+    <Orn turn />
+    <div class="wrap">
+      <h1>{t(lang, 'Contact')}</h1>
+      <p class="lead">{c.contact.lead}</p>
+    </div>
+  </section>
+
+  <section class="room room--sand contact" aria-label={t(lang, 'Contact')}>
+    <div class="wrap split">
+      <div class="contact-list">
+        <div>
+          <strong>{c.address}</strong>
+          <address>
+            <bdi>{restaurant.name}</bdi><br /><bdi>{restaurant.street}</bdi><br /><bdi>{restaurant.postcode} {restaurant.city}</bdi>
+          </address>
+        </div>
+        {
+          restaurant.phone && (
+            <div>
+              <strong>{c.phone}</strong>
+              <a href={`tel:${restaurant.phoneIntl}`} dir="ltr">{restaurant.phone}</a>
+            </div>
+          )
+        }
+        {
+          restaurant.email && (
+            <div>
+              <strong>{c.email}</strong>
+              <a href={`mailto:${restaurant.email}`} dir="ltr">{restaurant.email}</a>
+            </div>
+          )
+        }
+        <div>
+          <strong>{c.contact.reserveTitle}</strong>
+          <p><a class="btn" href={restaurant.bookingUrl} rel="noopener">{t(lang, 'Reserveren')}</a></p>
+          <p class="contact__note">{c.bookVia}</p>
+        </div>
+      </div>
+      <div>
+        <MapLink lang={lang} wide />
+      </div>
+    </div>
+  </section>
+
+  <section class="room room--red" aria-labelledby="tijden-h">
+    <div class="wrap split">
+      <h2 class="display" id="tijden-h">{t(lang, 'Openingstijden')}</h2>
+      <div><Hours lang={lang} /></div>
+    </div>
+  </section>
+</Site>
