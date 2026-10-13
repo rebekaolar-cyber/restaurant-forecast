@@ -625,10 +625,12 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 @keyframes rise { from { opacity: 0; translate: 0 2.25rem; } }
 
 /* ---------- the door between pages ----------
-   Moving to another page of the site: a green double door, like the front door,
+   Going to or from the homepage: a green double door, like the front door,
    slides shut over the page you are on, and swings open onto the next one.
    From a dish photo on the homepage, that photo grows into the door instead.
-   Browsers without page transitions simply open the next page. */
+   Between the other pages, and when only the language changes, the page
+   cross-fades. /vt.js tells the two apart. Browsers without page transitions
+   simply open the next page. */
 
 .pagedoor { display: none; position: fixed; inset: 0; z-index: 60; grid-template-columns: 1fr 1fr; perspective: 1800px; pointer-events: none; }
 .pagedoor__leaf {
@@ -648,35 +650,31 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 @media (prefers-reduced-motion: no-preference) {
   @view-transition { navigation: auto; }
 }
-@supports selector(:active-view-transition) {
+@supports selector(:active-view-transition-type(door)) {
   @media (prefers-reduced-motion: no-preference) {
-    /* the old page stays put; the new page, with its door shut, slides in from both sides */
-    ::view-transition-old(root) { animation: vt-hold 1.5s both; }
-    ::view-transition-new(root) { animation: vt-doors-in .55s cubic-bezier(.55, 0, .35, 1) both; }
-    :root:active-view-transition .pagedoor { display: grid; animation: pd-hide 1.5s step-end both; }
-    :root:active-view-transition .pagedoor__leaf--l { animation: pd-open-l 1.5s both; }
-    :root:active-view-transition .pagedoor__leaf--r { animation: pd-open-r 1.5s both; }
-    :root:active-view-transition .pagedoor__leaf::after { animation: pd-dark 1.5s both; }
+    /* between pages: a quiet cross-fade */
+    ::view-transition-old(root) { animation: vt-out .3s ease both; }
+    ::view-transition-new(root) { animation: vt-in .35s ease both; }
+
+    /* to or from the homepage: the old page stays put; the new page, with its door shut, slides in from both sides */
+    :root:active-view-transition-type(door)::view-transition-old(root) { animation: vt-hold 1.5s both; }
+    :root:active-view-transition-type(door)::view-transition-new(root) { animation: vt-doors-in .55s cubic-bezier(.55, 0, .35, 1) both; }
+    :root:active-view-transition-type(door) .pagedoor { display: grid; animation: pd-hide 1.5s step-end both; }
+    :root:active-view-transition-type(door) .pagedoor__leaf--l { animation: pd-open-l 1.5s both; }
+    :root:active-view-transition-type(door) .pagedoor__leaf--r { animation: pd-open-r 1.5s both; }
+    :root:active-view-transition-type(door) .pagedoor__leaf::after { animation: pd-dark 1.5s both; }
 
     /* from a dish photo: the clicked photo grows into the shut door, which then opens */
     .tile:focus .tile__pic { view-transition-name: tiledoor; }
-    :root:has(.mcat:target, .kaart__sec:target) .pagedoor { view-transition-name: tiledoor; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door) .pagedoor { view-transition-name: tiledoor; }
     ::view-transition-group(tiledoor) { animation-duration: .9s; animation-timing-function: cubic-bezier(.6, 0, .35, 1); }
     ::view-transition-old(tiledoor), ::view-transition-new(tiledoor) { animation-duration: .9s; }
-    :root:has(.mcat:target, .kaart__sec:target)::view-transition-new(root) { animation: vt-late 1.95s both; }
-    :root:has(.mcat:target, .kaart__sec:target)::view-transition-old(root) { animation: vt-hold 1.95s both; }
-    :root:has(.mcat:target, .kaart__sec:target):active-view-transition .pagedoor { animation-duration: 1.95s; }
-    :root:has(.mcat:target, .kaart__sec:target):active-view-transition .pagedoor__leaf--l { animation: pd-open-l-late 1.95s both; }
-    :root:has(.mcat:target, .kaart__sec:target):active-view-transition .pagedoor__leaf--r { animation: pd-open-r-late 1.95s both; }
-    :root:has(.mcat:target, .kaart__sec:target):active-view-transition .pagedoor__leaf::after { animation: pd-dark-late 1.95s both; }
-  }
-}
-/* switching language on the same page: a quiet cross-fade, no door */
-@supports selector(:active-view-transition-type(lang)) {
-  @media (prefers-reduced-motion: no-preference) {
-    :root:active-view-transition-type(lang)::view-transition-old(root) { animation: vt-out .3s ease both; }
-    :root:active-view-transition-type(lang)::view-transition-new(root) { animation: vt-in .35s ease both; }
-    :root:active-view-transition-type(lang) .pagedoor { display: none; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door)::view-transition-new(root) { animation: vt-late 1.95s both; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door)::view-transition-old(root) { animation: vt-hold 1.95s both; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door) .pagedoor { animation-duration: 1.95s; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door) .pagedoor__leaf--l { animation: pd-open-l-late 1.95s both; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door) .pagedoor__leaf--r { animation: pd-open-r-late 1.95s both; }
+    :root:has(.mcat:target, .kaart__sec:target):active-view-transition-type(door) .pagedoor__leaf::after { animation: pd-dark-late 1.95s both; }
   }
 }
 @keyframes vt-hold { from, to { opacity: 1; } }

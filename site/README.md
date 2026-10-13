@@ -40,8 +40,9 @@ One file, `src/pages/[...path].astro`, builds all twenty from the list in
 `src/content/i18n.ts`. The page designs are in `src/components/pages/`, the
 shared parts (header, footer, hours, map, door) in `src/components/site/`.
 
-Moving between pages plays the green double door (a browser "view
-transition", CSS only). Switching language only cross-fades. Browsers without
+Going to or from the homepage plays the green double door (a browser "view
+transition", CSS only; `/vt.js` decides which kind). Between the other pages,
+and when only the language changes, the page cross-fades. Browsers without
 this feature simply load the next page.
 
 The menu page has a switch "Met foto's / Alleen tekst": the same card with
