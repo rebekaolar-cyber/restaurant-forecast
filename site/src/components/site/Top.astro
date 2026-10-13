@@ -41,8 +41,8 @@ const current = (key: PageKey) => (key === page ? 'page' : undefined);
     }
   </div>
   <details class="langpick">
-    <summary aria-label="Taal · Language · Sprache · اللغة">
-      {lang.toUpperCase()}
+    <summary>
+      <span class="sr-only">Taal · Language · Sprache · اللغة: </span>{lang.toUpperCase()}
       <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5l5-5" /></svg>
     </summary>
     <div class="langpick__list">

@@ -16,11 +16,12 @@
   --sand: #f4ece2;          /* lamp-lit sand */
   --sand-deep: #e8dccb;     /* placeholder tone on sand */
   --brass: #e2c084;         /* lamps, screens, gold door frame */
-  --brass-deep: #8f6b2a;    /* the same brass in shadow, for lines on sand */
+  --brass-deep: #836128;    /* the same brass in shadow, for lines on sand */
   --ink: #231f20;           /* brand black */
   --paper: #fcfaf6;         /* the menu card's paper */
   --paper-soft: #5d544d;    /* descriptions on the card */
   --magenta: #ec008c;       /* brand magenta: buttons and marks only */
+  --magenta-ui: #dd0085;    /* the same magenta a shade deeper, under white text: readable for everyone (WCAG AA) */
   --magenta-press: #c60076;
 
   --serif: 'Brygada 1918', 'Amiri', 'Iowan Old Style', 'Palatino Linotype', Georgia, serif;
@@ -108,7 +109,7 @@ img { max-width: 100%; }
 .btn {
   display: inline-flex; align-items: center; justify-content: center; gap: .65rem;
   min-height: 3.25rem; padding: .7rem 1.7rem; border: 0; border-radius: 999px;
-  background: var(--magenta); color: #fff;
+  background: var(--magenta-ui); color: #fff;
   font: 500 1.125rem/1.1 var(--sans); letter-spacing: .015em; text-decoration: none; cursor: pointer;
   transition: background-color .2s, translate .2s;
 }
@@ -161,14 +162,14 @@ img { max-width: 100%; }
 .top__logo svg { width: 100%; height: auto; fill: currentColor; }
 .top__logo .dots, .foot__logo .dots { fill: var(--magenta); }
 .top__home { flex: none; gap: .45rem; min-height: 2.5rem; padding: .4rem 1rem .4rem .85rem; font-size: .9375rem; }
-.top__home:hover { background: var(--magenta); color: #fff; box-shadow: none; }
+.top__home:hover { background: var(--magenta-ui); color: #fff; box-shadow: none; }
 .back { width: 1rem; height: 1rem; flex: none; }
 .top__nav { display: flex; align-items: center; gap: clamp(1rem, 2.4vw, 2.25rem); font: 500 1.0625rem/1 var(--sans); letter-spacing: .02em; }
 .top__nav a { padding: .5rem 0; text-decoration: none; }
 .top__nav a:hover { text-decoration: underline; text-decoration-color: var(--magenta); text-decoration-thickness: 2px; text-underline-offset: .4em; }
 .top__nav [aria-current="page"] { text-decoration: underline; text-decoration-color: var(--brass); text-decoration-thickness: 1px; text-underline-offset: .4em; }
 /* Menu is an "act now" link: magenta from the start, like Reserveren */
-.top__nav a.top__menu { padding: .55rem 1.1rem; border-radius: 999px; background: var(--magenta); color: #fff; text-decoration: none; transition: background-color .2s; }
+.top__nav a.top__menu { padding: .55rem 1.1rem; border-radius: 999px; background: var(--magenta-ui); color: #fff; text-decoration: none; transition: background-color .2s; }
 .top__nav a.top__menu:hover { background: var(--magenta-press); }
 .top__nav a.top__menu[aria-current="page"] { box-shadow: 0 0 0 2px var(--sand); }
 
@@ -186,7 +187,7 @@ img { max-width: 100%; }
 .langpick__list { position: absolute; z-index: 30; top: calc(100% + .4rem); inset-inline-end: 0; display: grid; min-width: 9.5rem; padding: .35rem; border-radius: .75rem; background: var(--sand); color: var(--ink); box-shadow: 0 .75rem 2rem rgb(0 0 0 / .3); }
 .langpick__list a { padding: .6rem .75rem; border-radius: .5rem; font: 500 1rem/1.2 var(--sans); text-decoration: none; }
 .langpick__list a:hover { background: var(--sand-deep); }
-.langpick__list a[aria-current="true"] { color: var(--magenta); }
+.langpick__list a[aria-current="true"] { color: var(--magenta-press); }
 
 /* Arabic: letters are joined, so no letter-spacing and no capitals */
 :root[lang="ar"] :is(.eyebrow, .top__nav, .lang, .tile__title, .kaart__sec h3, .mnav a, .foot strong, .hero__scroll, .dish__name, .item__name, .hero__tag) { letter-spacing: 0; }
@@ -375,11 +376,11 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 .prose p { margin-top: 1rem; color: var(--soft); text-wrap: pretty; }
 .prose .lead { margin-top: 0; color: var(--fg); }
 .prose a { text-decoration-color: var(--magenta); text-decoration-thickness: 2px; text-underline-offset: .2em; }
-.card-photo { position: relative; }
+.card-photo { position: relative; padding: .7rem .7rem 0; }
 .card-photo .arch { max-width: 26rem; margin-inline: auto; }
 .todo {
   display: block; margin-top: 1.25rem; padding: .85rem 1rem; border: 1px dashed currentColor; border-radius: .25rem;
-  font-size: .9375rem; line-height: 1.45; opacity: .85;
+  font-size: .9375rem; line-height: 1.45;
 }
 .todo::before { content: attr(data-tag); display: block; margin-bottom: .3rem; font: 600 .6875rem/1.3 var(--mono); letter-spacing: .12em; text-transform: uppercase; }
 .contact-list { display: grid; gap: 1.5rem; }
@@ -403,7 +404,7 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 .mnav ul::-webkit-scrollbar { display: none; }
 .mnav a { display: block; padding: .3rem 0; font: 500 .8125rem/1 var(--sans); letter-spacing: .16em; text-transform: uppercase; text-decoration: none; }
 .mnav a:hover { text-decoration: underline; text-decoration-color: var(--magenta); text-decoration-thickness: 2px; text-underline-offset: .5em; }
-.mnav__home { display: inline-flex !important; align-items: center; gap: .4rem; color: var(--magenta); }
+.mnav__home { display: inline-flex !important; align-items: center; gap: .4rem; color: var(--magenta-press); }
 .mnav__home:hover { text-decoration: none !important; color: var(--ink); }
 .mcat { position: relative; padding-block: clamp(4rem, 2rem + 6vw, 7.5rem); scroll-margin-top: 3rem; }
 .mcat .kaart { max-width: 66rem; margin-inline: auto; }
@@ -430,7 +431,7 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 /* section titles within a sheet: magenta capitals between two short brass lines */
 .kaart__sec h3 {
   display: flex; align-items: center; justify-content: center; gap: clamp(.75rem, 2vw, 1.25rem);
-  margin-bottom: clamp(1.4rem, 3vw, 2.1rem); text-align: center; color: var(--magenta);
+  margin-bottom: clamp(1.4rem, 3vw, 2.1rem); text-align: center; color: var(--magenta-ui);
   font: 500 clamp(1.05rem, .95rem + .45vw, 1.35rem)/1.25 var(--sans); letter-spacing: .16em; text-transform: uppercase; text-wrap: balance;
 }
 .kaart__sec h3::before, .kaart__sec h3::after { content: ''; flex: 0 1 clamp(1.5rem, 6vw, 3.5rem); height: 1px; background: var(--brass-deep); opacity: .7; }
@@ -483,12 +484,12 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 .dish__name .item__price { margin-inline-start: auto; padding: 0; font: 500 1.0625rem/1.2 var(--serif); letter-spacing: 0; color: var(--ink); }
 @media (hover: hover) {
   .dish:hover .dish__info { opacity: 1; }
-  .dish:hover .dish__name { color: var(--magenta); }
+  .dish:hover .dish__name { color: var(--magenta-ui); }
 }
 .dish__toggle:checked + .dish__card .dish__info { opacity: 1; }
 .dish__toggle:checked + .dish__card .dish__i { display: none; }
 .dish__toggle:checked + .dish__card .dish__x { display: block; }
-.dish__toggle:checked + .dish__card .dish__name { color: var(--magenta); }
+.dish__toggle:checked + .dish__card .dish__name { color: var(--magenta-ui); }
 .dish__toggle:focus-visible + .dish__card .dish__pic { outline: 3px solid var(--magenta); outline-offset: .35rem; }
 
 /* the menu with photos, or as a list of text only */
@@ -499,9 +500,9 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 .viewpick label:hover { color: var(--brass); }
 .viewpick--bar { border-color: rgb(35 31 32 / .16); color: var(--ink); }
 .viewpick--bar label { padding: .4rem .8rem; font-size: .8125rem; }
-.viewpick--bar label:hover { color: var(--magenta); }
+.viewpick--bar label:hover { color: var(--magenta-press); }
 :root:has(#view-photo:checked) .viewpick label[for="view-photo"],
-:root:has(#view-list:checked) .viewpick label[for="view-list"] { background: var(--magenta); color: #fff; }
+:root:has(#view-list:checked) .viewpick label[for="view-list"] { background: var(--magenta-ui); color: #fff; }
 :root:has(#view-photo:focus-visible) .viewpick label[for="view-photo"],
 :root:has(#view-list:focus-visible) .viewpick label[for="view-list"] { outline: 2px solid var(--magenta); outline-offset: 2px; }
 :root:has(#view-list:checked) .mhead__hint { display: none; }
@@ -509,7 +510,7 @@ a.social:hover { text-decoration: underline; text-decoration-thickness: 2px; tex
 @container (min-width: 44rem) { :root:has(#view-list:checked) .kaart .dishes { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 :root:has(#view-list:checked) .dish__card { display: flex; flex-direction: column; gap: .35rem; cursor: default; }
 :root:has(#view-list:checked) :is(.dish__pic, .dish__pic > .arch__clip) { display: contents; }
-:root:has(#view-list:checked) :is(.dish__pic img, .dish__ph, .dish__pic .arch__line, .dish__more) { display: none; }
+:root:has(#view-list:checked) :is(.dish__pic picture, .dish__pic img, .dish__ph, .dish__pic .arch__line, .dish__more) { display: none; }
 :root:has(#view-list:checked) .dish__name { order: 1; margin-top: 0; color: var(--ink) !important; }
 :root:has(#view-list:checked) .dish__n { display: flex; flex: 1; align-items: baseline; gap: .55rem; min-width: 0; }
 :root:has(#view-list:checked) .dish__n::after { content: ''; flex: 1 1 1rem; min-width: 1rem; border-bottom: 1px dotted rgb(35 31 32 / .35); translate: 0 -.3em; }

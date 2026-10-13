@@ -74,23 +74,23 @@ const ogImage = new URL('/og.jpg', site).href;
     <a class="skip" href="#inhoud">{c.skip}</a>
     {
       !live && (
-        <p class="test-banner">
+        <aside class="test-banner" aria-label={c.testLabel}>
           {c.testBanner} <a href={restaurant.currentWebsite}>{restaurant.currentWebsiteLabel}</a>.
-        </p>
+        </aside>
       )
     }
     <Sprite />
-    <div id="inhoud">
+    <main id="inhoud">
       <slot />
-    </div>
+      {
+        page !== 'notFound' && (
+          <a class="btn fab" href={restaurant.bookingUrl} rel="noopener">
+            {t(lang, 'Reserveren')}
+          </a>
+        )
+      }
+    </main>
     <Foot lang={lang} />
-    {
-      page !== 'notFound' && (
-        <a class="btn fab" href={restaurant.bookingUrl} rel="noopener">
-          {t(lang, 'Reserveren')}
-        </a>
-      )
-    }
     <PageDoor />
     <script>
       import '../scripts/auth-handoff';
