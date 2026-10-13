@@ -11,6 +11,9 @@ if (looksSecret(env.PUBLIC_SUPABASE_PUBLISHABLE_KEY)) throw new Error(SECRET_KEY
 // Static site: every page is plain HTML built ahead of time, so Cloudflare
 // Pages only has to serve files. No server code runs for visitors.
 export default defineConfig({
+  // The address the site will have once it replaces the current one. Used for
+  // canonical links, language alternates, the sitemap and the sharing picture.
+  site: 'https://habibienschede.nl',
   output: 'static',
   trailingSlash: 'always',
   build: {
