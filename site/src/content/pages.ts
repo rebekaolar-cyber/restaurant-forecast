@@ -60,6 +60,7 @@ const nl = {
   about: {
     lead: 'Heerlijk uitgebreid tafelen? Dat doe je bij Habibi.',
     cardEyebrow: 'Uit onze menukaart',
+    photoAlt: 'De ingang van Restaurant Habibi aan de Wethouder Beversstraat',
     card: [
       'Onze met zeer veel liefde gemaakte gerechten, zijn geïnspireerd op recepten die in onze familie al sinds vele generaties in gebruik zijn. Al deze gerechten zijn gebaseerd op de Libanese/Arabische keuken. Deze is ontstaan vanuit allerlei invloeden uit het midden oosten.',
       'Op onze menukaart staan, naast onze reguliere gerechten, onder andere een aantal warme en koude kleine gerechten die ook wel “Maza” genoemd worden. Deze kleine gerechten, waarvan sommige ook zeer geschikt zijn voor vegetariërs, kunnen met het hele tafelgezelschap genuttigd en gedeeld worden.',
@@ -167,6 +168,7 @@ const en: PageCopy = {
   about: {
     lead: 'Love a long, leisurely dinner? That’s what Habibi is for.',
     cardEyebrow: 'From our menu card',
+    photoAlt: 'The entrance of Restaurant Habibi on Wethouder Beversstraat',
     card: [
       'Our dishes, made with a great deal of love, are inspired by recipes that our family has used for many generations. They are all based on Lebanese and Arab cooking, which grew out of many influences from across the Middle East.',
       'Besides our regular dishes, the menu has a number of small hot and cold dishes known as “maza”. They are made to be shared by the whole table, and several are well suited to vegetarians.',
@@ -272,6 +274,7 @@ const de: PageCopy = {
   about: {
     lead: 'Gemütlich und ausgiebig tafeln? Das geht bei Habibi.',
     cardEyebrow: 'Aus unserer Speisekarte',
+    photoAlt: 'Der Eingang des Restaurants Habibi an der Wethouder Beversstraat',
     card: [
       'Unsere mit viel Liebe zubereiteten Gerichte sind von Rezepten inspiriert, die in unserer Familie seit vielen Generationen verwendet werden. Sie alle beruhen auf der libanesisch-arabischen Küche, die aus vielen Einflüssen des Nahen Ostens entstanden ist.',
       'Neben unseren regulären Gerichten finden Sie auf der Karte kleine warme und kalte Gerichte, die „Maza“ genannt werden. Sie werden mit dem ganzen Tisch geteilt, und einige eignen sich besonders für Vegetarier.',
@@ -377,6 +380,7 @@ const ar: PageCopy = {
   about: {
     lead: 'تحبّون السهرات الطويلة حول مائدة عامرة؟ هذا ما ستجدونه في حبيبي.',
     cardEyebrow: 'من قائمة طعامنا',
+    photoAlt: 'مدخل Restaurant Habibi في Wethouder Beversstraat',
     card: [
       'أطباقنا المحضّرة بكثير من الحب مستوحاة من وصفات تستخدمها عائلتنا منذ أجيال عديدة. وكلها مبنية على المطبخ اللبناني والعربي الذي نشأ من تأثيرات متنوعة من أنحاء الشرق الأوسط.',
       'إلى جانب أطباقنا المعتادة، تضم القائمة أطباقًا صغيرة ساخنة وباردة تُعرف بـ«المازة». تُشارَك مع جميع من على الطاولة، وبعضها مناسب جدًا للنباتيين.',

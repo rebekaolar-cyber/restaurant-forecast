@@ -3,11 +3,13 @@
 import Site from '../../layouts/Site.astro';
 import Top from '../site/Top.astro';
 import Orn from '../site/Orn.astro';
+import { Picture } from 'astro:assets';
 import ArchLine from '../site/ArchLine.astro';
 import { href, t, type Lang } from '../../content/i18n';
 import { copy } from '../../content/pages';
 import { restaurant } from '../../content/restaurant';
 import { restaurantLd } from '../../content/structured';
+import front from '../../assets/photos/about/restaurant.jpg';
 
 interface Props {
   lang: Lang;
@@ -37,10 +39,7 @@ const a = c.about;
       <div class="card-photo">
         <figure class="arch">
           <div class="arch__clip">
-            <span class="ph">
-              <span class="ph__n">{c.photoToCome}</span>
-              <span class="ph__t">{restaurant.name}</span>
-            </span>
+            <Picture src={front} alt={a.photoAlt} widths={[front.width]} sizes="(min-width: 54rem) 26rem, 90vw" formats={['avif', 'webp']} loading="lazy" />
           </div>
           <ArchLine />
         </figure>
