@@ -191,12 +191,12 @@ export const TR: Record<string, readonly [string, string, string]> = {
     "قائمة الطعام اللبنانية في مطعم حبيبي."
   ],
   "Allergieinformatie:": [
-    "Allergy information:",
+    "Allergen information:",
     "Allergiehinweise:",
     "معلومات الحساسية:"
   ],
   "Glutenvrij": [
-    "Gluten-free",
+    "Gluten free",
     "Glutenfrei",
     "خالٍ من الغلوتين"
   ],
@@ -301,7 +301,7 @@ export const TR: Record<string, readonly [string, string, string]> = {
     "المازة الساخنة"
   ],
   "Gerechten van de houtskoolgrill": [
-    "From the charcoal grill",
+    "Dishes prepared on the charcoal grill",
     "Vom Holzkohlegrill",
     "من شواية الفحم"
   ],
@@ -326,7 +326,7 @@ export const TR: Record<string, readonly [string, string, string]> = {
     "المشروبات الساخنة"
   ],
   "Koude dranken": [
-    "Cold drinks",
+    "Cold beverages",
     "Kalte Getränke",
     "المشروبات الباردة"
   ],
@@ -336,7 +336,7 @@ export const TR: Record<string, readonly [string, string, string]> = {
     "البيرة"
   ],
   "Speciaalbier": [
-    "Speciality beer",
+    "Craft beers",
     "Spezialbier",
     "بيرة خاصة"
   ],

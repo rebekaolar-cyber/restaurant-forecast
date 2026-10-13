@@ -137,12 +137,12 @@ export const categories: Category[] = [
         "items": [
           {
             "name": "Adas",
-            "price": null,
+            "price": "8.5",
             "desc": {
-              "nl": "Linzensoep, bereid met rode linzen {?}",
-              "en": "Lentil soup made with red lentils {?}",
-              "de": "Linsensuppe aus roten Linsen {?}",
-              "ar": "شوربة عدس محضّرة من العدس الأحمر {?}"
+              "nl": "Linzensoep, bereid met rode linzen en verse kruiden",
+              "en": "Lentil soup, prepared with red lentils and fresh herbs",
+              "de": "Linsensuppe aus roten Linsen und frischen Kräutern",
+              "ar": "شوربة عدس محضّرة من العدس الأحمر والأعشاب الطازجة"
             },
             "icons": [
               "gf",
@@ -168,7 +168,7 @@ export const categories: Category[] = [
             "price": "9.5",
             "desc": {
               "nl": "Fijn gesneden salade van groenten en peterselie met fijne burgul in een dressing van olijfolie en citroensap",
-              "en": "Finely chopped salad of vegetables and parsley with fine bulgur in an olive oil and lemon dressing",
+              "en": "Finely chopped vegetable and parsley salad with fine bulgur, with an olive oil and lemon juice dressing",
               "de": "Fein gehackter Salat aus Gemüse und Petersilie mit feinem Bulgur in einem Dressing aus Olivenöl und Zitronensaft",
               "ar": "سلطة مفرومة ناعمًا من الخضار والبقدونس مع برغل ناعم، بتتبيلة زيت الزيتون وعصير الليمون"
             },
@@ -183,7 +183,7 @@ export const categories: Category[] = [
             "price": "9.5",
             "desc": {
               "nl": "Grof gesneden salade van groenten in een dressing van olijfolie, citroen en granaatappelsiroop bedekt met stukken gebakken Arabisch brood",
-              "en": "Coarsely chopped vegetable salad in an olive oil, lemon and pomegranate molasses dressing, topped with pieces of fried Arabic bread",
+              "en": "Coarsely chopped vegetable salad with a dressing made of olive oil, lemon and pomegranate syrup, topped with chunks of Arab bread",
               "de": "Grob geschnittener Gemüsesalat in einem Dressing aus Olivenöl, Zitrone und Granatapfelsirup, mit Stücken von gebackenem arabischem Brot",
               "ar": "سلطة خضار مقطعة قطعًا كبيرة بتتبيلة زيت الزيتون والليمون ودبس الرمان، مغطاة بقطع الخبز العربي المحمّص"
             },
@@ -198,7 +198,7 @@ export const categories: Category[] = [
             "price": "9.5",
             "desc": {
               "nl": "Olijven met fetakaas salade",
-              "en": "Olive salad with feta cheese",
+              "en": "Olive and feta cheese salad",
               "de": "Olivensalat mit Feta",
               "ar": "سلطة زيتون مع جبنة الفيتا"
             },
@@ -213,7 +213,7 @@ export const categories: Category[] = [
             "price": "9.5",
             "desc": {
               "nl": "Rucolasalade met ui, tomaat en een frisse dressing",
-              "en": "Rocket salad with onion, tomato and a fresh dressing",
+              "en": "Arugula salad with onion, tomato, and a fresh dressing",
               "de": "Rucolasalat mit Zwiebel, Tomate und einem frischen Dressing",
               "ar": "سلطة جرجير مع البصل والطماطم وتتبيلة منعشة"
             },
@@ -235,7 +235,7 @@ export const categories: Category[] = [
         },
         "note": {
           "nl": "* Bovenstaande gerechten, die je ook met elkaar kan delen, worden geserveerd met een mandje Arabisch brood. Glutenvrij brood is ook mogelijk.",
-          "en": "* The dishes above are for sharing too, and come with a basket of Arabic bread. Gluten-free bread is also available.",
+          "en": "The dishes above, which can be shared, are served with a side of Arab bread. Gluten-free bread is also available.",
           "de": "* Die Gerichte oben eignen sich auch zum Teilen und werden mit einem Korb arabischem Brot serviert. Glutenfreies Brot ist ebenfalls möglich.",
           "ar": "* يمكن مشاركة الأطباق أعلاه، وتُقدَّم مع سلة من الخبز العربي. يتوفر أيضًا خبز خالٍ من الغلوتين."
         },
@@ -246,7 +246,7 @@ export const categories: Category[] = [
             "price": "9",
             "desc": {
               "nl": "Een dip van vers gemalen kikkererwten met sesampasta en knoflook, besprenkelt met olijfolie en citroensap",
-              "en": "A dip of freshly ground chickpeas with sesame paste and garlic, drizzled with olive oil and lemon juice",
+              "en": "A dip made of freshly ground chickpeas with sesame paste and garlic, sprinkled with olive oil and lemon juice",
               "de": "Ein Dip aus frisch gemahlenen Kichererbsen mit Sesampaste und Knoblauch, beträufelt mit Olivenöl und Zitronensaft",
               "ar": "غموس من الحمص المطحون طازجًا مع الطحينة والثوم، يُرشّ بزيت الزيتون وعصير الليمون"
             },
@@ -262,7 +262,7 @@ export const categories: Category[] = [
             "price": "11.5",
             "desc": {
               "nl": "Hommus belegd met kalfsgehakt",
-              "en": "Hommus topped with minced veal",
+              "en": "Hommus topped with veal mince",
               "de": "Hommus mit Kalbshackfleisch",
               "ar": "حمص مغطّى بلحم العجل المفروم"
             },
@@ -276,7 +276,7 @@ export const categories: Category[] = [
             "price": "8.5",
             "desc": {
               "nl": "Pulled chicken in een yoghurtsaus met sesampasta, knoflook en peterselie",
-              "en": "Pulled chicken in a yoghurt sauce with sesame paste, garlic and parsley",
+              "en": "Pulled chicken in yoghurt sauce with sesame paste, garlic and parsley",
               "de": "Gezupftes Hähnchen in einer Joghurtsauce mit Sesampaste, Knoblauch und Petersilie",
               "ar": "دجاج مسحّب بصلصة اللبن مع الطحينة والثوم والبقدونس"
             },
@@ -290,7 +290,7 @@ export const categories: Category[] = [
             "price": "8.5",
             "desc": {
               "nl": "Een dip van gegrilde paprika en geroosterde walnoten afgemaakt met granaatappelsiroop",
-              "en": "A dip of grilled peppers and roasted walnuts, finished with pomegranate molasses",
+              "en": "A dip made of grilled paprika and roasted walnuts, finished with pomegranate syrup",
               "de": "Ein Dip aus gegrillter Paprika und gerösteten Walnüssen, verfeinert mit Granatapfelsirup",
               "ar": "غموس من الفلفل المشوي والجوز المحمّص، يُزيَّن بدبس الرمان"
             },
@@ -306,7 +306,7 @@ export const categories: Category[] = [
             "price": "8.5",
             "desc": {
               "nl": "Een hangop van yoghurt met diverse gesneden groenten, burgul en witte kaas",
-              "en": "Strained yoghurt with assorted chopped vegetables, bulgur and white cheese",
+              "en": "Strained yoghurt with various chopped vegetables, bulgur and white cheese",
               "de": "Abgetropfter Joghurt mit verschiedenem geschnittenem Gemüse, Bulgur und weißem Käse",
               "ar": "لبن مصفّى مع تشكيلة من الخضار المقطعة والبرغل والجبنة البيضاء"
             },
@@ -321,7 +321,7 @@ export const categories: Category[] = [
             "price": "9",
             "desc": {
               "nl": "Druivenbladeren gevuld met rijst en groenten",
-              "en": "Vine leaves stuffed with rice and vegetables",
+              "en": "Grape leaves stuffed with rice and vegetables",
               "de": "Weinblätter gefüllt mit Reis und Gemüse",
               "ar": "ورق عنب محشي بالأرز والخضار"
             },
@@ -333,7 +333,7 @@ export const categories: Category[] = [
           },
           {
             "name": "Tzaziki",
-            "price": null,
+            "price": "8.5",
             "desc": {
               "nl": "Yoghurtdip met geraspte komkommer, munt, dille en knoflook",
               "en": "Yoghurt dip with grated cucumber, mint, dill and garlic",
@@ -352,7 +352,7 @@ export const categories: Category[] = [
             "price": "8.5",
             "desc": {
               "nl": "Een fijne gesneden mix van gegrilde aubergine en verse groenten, afgemaakt met granaatappelsiroop",
-              "en": "A finely chopped mix of grilled aubergine and fresh vegetables, finished with pomegranate molasses",
+              "en": "A finely chopped mix of grilled eggplant and fresh vegetables, finished with pomegranate syrup",
               "de": "Eine fein gehackte Mischung aus gegrillter Aubergine und frischem Gemüse, verfeinert mit Granatapfelsirup",
               "ar": "خليط مفروم ناعمًا من الباذنجان المشوي والخضار الطازجة، يُزيَّن بدبس الرمان"
             },
@@ -368,7 +368,7 @@ export const categories: Category[] = [
             "price": "6.5",
             "desc": {
               "nl": "Opgeklopte eiwit met zonnebloem olie, knoflook en citroen",
-              "en": "Whipped egg white with sunflower oil, garlic and lemon",
+              "en": "Beaten egg white with sunflower oil, garlic and lemon",
               "de": "Aufgeschlagenes Eiweiß mit Sonnenblumenöl, Knoblauch und Zitrone",
               "ar": "بياض بيض مخفوق مع زيت دوار الشمس والثوم والليمون"
             },
@@ -383,7 +383,7 @@ export const categories: Category[] = [
             "price": "8.5",
             "desc": {
               "nl": "Een dip van yoghurt met sesampasta gemengd met gegrilde aubergine",
-              "en": "A dip of yoghurt and sesame paste mixed with grilled aubergine",
+              "en": "A dip made of yoghurt and sesame paste mixed with grilled eggplant",
               "de": "Ein Dip aus Joghurt und Sesampaste mit gegrillter Aubergine",
               "ar": "غموس من اللبن والطحينة ممزوج بالباذنجان المشوي"
             },
@@ -399,7 +399,7 @@ export const categories: Category[] = [
             "price": "14",
             "desc": {
               "nl": "Tartaar gemengd met burgul, op traditonele wijze gekruid, afgemaakt met olijfolie",
-              "en": "Raw minced meat mixed with bulgur, seasoned the traditional way and finished with olive oil",
+              "en": "Steak tartare mixed with bulgur, traditionally seasoned and finished with olive oil",
               "de": "Tatar mit Bulgur, traditionell gewürzt und mit Olivenöl verfeinert",
               "ar": "لحم نيء مفروم ممزوج بالبرغل، متبّل بالطريقة التقليدية ويُزيَّن بزيت الزيتون"
             },
@@ -418,7 +418,7 @@ export const categories: Category[] = [
         },
         "note": {
           "nl": "* Bovenstaande gerechten kan je ook met je tafelgenoten delen.",
-          "en": "* The dishes above are also for sharing with your table.",
+          "en": "The dishes above can be shared with your table companions.",
           "de": "* Die Gerichte oben können Sie auch mit Ihren Tischgästen teilen.",
           "ar": "* يمكنكم أيضًا مشاركة الأطباق أعلاه مع رفاقكم على الطاولة."
         },
@@ -429,7 +429,7 @@ export const categories: Category[] = [
             "price": "10",
             "desc": {
               "nl": "Druivenbladeren gevuld met rijst en rundergehakt",
-              "en": "Vine leaves stuffed with rice and minced beef",
+              "en": "Grape leaves stuffed with rice and minced beef",
               "de": "Weinblätter gefüllt mit Reis und Rinderhackfleisch",
               "ar": "ورق عنب محشي بالأرز ولحم البقر المفروم"
             },
@@ -443,7 +443,7 @@ export const categories: Category[] = [
             "price": "13.5",
             "desc": {
               "nl": "Gebakken burgul-tartaar bolletjes, gevuld met rundergehakt, pijnboompitten en ui",
-              "en": "Fried bulgur and meat balls filled with minced beef, pine nuts and onion",
+              "en": "Fried bulgur-steak-tartare balls stuffed with minced beef, pine nuts and onion",
               "de": "Frittierte Bällchen aus Bulgur und Fleisch, gefüllt mit Rinderhack, Pinienkernen und Zwiebeln",
               "ar": "كرات برغل ولحم مقلية، محشوة بلحم البقر المفروم والصنوبر والبصل"
             },
@@ -470,7 +470,7 @@ export const categories: Category[] = [
             "price": "8.5",
             "desc": {
               "nl": "Schijven van gemalen kikkererwten, geserveerd met tahinesaus",
-              "en": "Patties of ground chickpeas, served with tahini sauce",
+              "en": "Discs of ground chickpeas, served with tahini sauce",
               "de": "Taler aus gemahlenen Kichererbsen, serviert mit Tahinisauce",
               "ar": "أقراص من الحمص المطحون، تُقدَّم مع صلصة الطحينة"
             },
@@ -485,7 +485,7 @@ export const categories: Category[] = [
             "price": "9.5",
             "desc": {
               "nl": "Bladerdeeg gevuld met witte kaas en peterselie",
-              "en": "Puff pastry filled with white cheese and parsley",
+              "en": "Puff pastry stuffed with white cheese and parsley",
               "de": "Blätterteig gefüllt mit weißem Käse und Petersilie",
               "ar": "عجينة مورّقة محشوة بالجبنة البيضاء والبقدونس"
             },
@@ -499,7 +499,7 @@ export const categories: Category[] = [
             "price": "11",
             "desc": {
               "nl": "Gegrild Arabisch brood met gehakt en witte kaas van de houtskoolgrill",
-              "en": "Arabic bread with minced meat and white cheese, grilled over charcoal",
+              "en": "Grilled Arab bread with minced meat and white cheese, prepared on the charcoal grill",
               "de": "Arabisches Brot mit Hackfleisch und weißem Käse vom Holzkohlegrill",
               "ar": "خبز عربي مع اللحم المفروم والجبنة البيضاء، مشوي على الفحم"
             },
@@ -512,7 +512,7 @@ export const categories: Category[] = [
             "price": "9.5",
             "desc": {
               "nl": "In stukken gesneden gehaktbrood",
-              "en": "Sliced meat-filled bread",
+              "en": "Sliced meatloaf",
               "de": "In Stücke geschnittenes Brot mit Hackfleischfüllung",
               "ar": "خبز محشو باللحم ومقطّع قطعًا"
             },
@@ -522,10 +522,10 @@ export const categories: Category[] = [
           },
           {
             "name": "Jibneh Mushwiyeh",
-            "price": null,
+            "price": "11",
             "desc": {
               "nl": "Gegrilde halloumi kaas van de houtskoolgrill",
-              "en": "Halloumi cheese grilled over charcoal",
+              "en": "Grilled halloumi cheese prepared on the charcoal grill",
               "de": "Halloumi vom Holzkohlegrill",
               "ar": "جبنة حلوم مشوية على الفحم"
             },
@@ -540,7 +540,7 @@ export const categories: Category[] = [
             "price": "13",
             "desc": {
               "nl": "Een heerlijk traditioneel stoofpotje van draadjesvlees",
-              "en": "A delicious traditional stew of slow-cooked beef",
+              "en": "A delicious, traditional stew made with shredded meat",
               "de": "Ein köstlicher traditioneller Schmortopf aus zartem Rindfleisch",
               "ar": "يخنة تقليدية لذيذة من لحم البقر المطهو ببطء"
             },
@@ -552,7 +552,7 @@ export const categories: Category[] = [
             "price": "10",
             "desc": {
               "nl": "Op houtskool gegrilde kippenvleugels afgeblust met knoflookolie en citroensap",
-              "en": "Chicken wings grilled over charcoal with garlic oil and lemon juice",
+              "en": "Charcoal-grilled chicken wings with garlic oil and lemon juice",
               "de": "Hähnchenflügel vom Holzkohlegrill mit Knoblauchöl und Zitronensaft",
               "ar": "أجنحة دجاج مشوية على الفحم مع زيت الثوم وعصير الليمون"
             },
@@ -566,7 +566,7 @@ export const categories: Category[] = [
             "price": "9",
             "desc": {
               "nl": "Gebakken aardappelblokjes met knoflook en koriander",
-              "en": "Fried potato cubes with garlic and coriander",
+              "en": "Fried diced potatoes with garlic and coriander",
               "de": "Gebratene Kartoffelwürfel mit Knoblauch und Koriander",
               "ar": "مكعبات بطاطا مقلية مع الثوم والكزبرة"
             },
@@ -581,7 +581,7 @@ export const categories: Category[] = [
             "price": "13.5",
             "desc": {
               "nl": "Gebakken gamba’s in een huisgemaakte marinade",
-              "en": "Fried prawns in a homemade marinade",
+              "en": "Fried prawns in homemade marinade",
               "de": "Gebratene Garnelen in hausgemachter Marinade",
               "ar": "قريدس مقلي بتتبيلة منزلية"
             },
@@ -606,13 +606,13 @@ export const categories: Category[] = [
         "id": "gerechten-van-de-houtskoolgrill",
         "title": {
           "nl": "Gerechten van de houtskoolgrill",
-          "en": "From the charcoal grill",
+          "en": "Dishes prepared on the charcoal grill",
           "de": "Vom Holzkohlegrill",
           "ar": "من شواية الفحم"
         },
         "note": {
           "nl": "* Bovenstaande gerechten worden geserveerd met cremetoum, patat, rijst en uiensalade en Arabisch brood. Glutenvrij brood is ook mogelijk.",
-          "en": "* The dishes above are served with garlic cream, fries, rice, onion salad and Arabic bread. Gluten-free bread is also available.",
+          "en": "The dishes above are served with crème toum, chips, rice and onion salad and Arab bread. Gluten-free bread is also available.",
           "de": "* Die Gerichte oben werden mit Knoblauchcreme, Pommes, Reis, Zwiebelsalat und arabischem Brot serviert. Glutenfreies Brot ist ebenfalls möglich.",
           "ar": "* تُقدَّم الأطباق أعلاه مع كريمة الثوم والبطاطا المقلية والأرز وسلطة البصل والخبز العربي. يتوفر أيضًا خبز خالٍ من الغلوتين."
         },
@@ -623,7 +623,7 @@ export const categories: Category[] = [
             "price": "25",
             "desc": {
               "nl": "Twee spiesen van gegrild gehakt, op authentieke wijze gekruid",
-              "en": "Two skewers of grilled minced meat, seasoned the authentic way",
+              "en": "Two skewers with grilled minced meat, with traditional seasoning",
               "de": "Zwei Spieße aus gegrilltem Hackfleisch, authentisch gewürzt",
               "ar": "سيخان من اللحم المفروم المشوي، متبّل بالطريقة الأصيلة"
             },
@@ -635,7 +635,7 @@ export const categories: Category[] = [
             "price": "25",
             "desc": {
               "nl": "Twee spiesen gegrilde gemarineerde stukken kipfilet",
-              "en": "Two skewers of grilled marinated chicken breast",
+              "en": "Two skewers with grilled, marinated pieces of chicken fillet",
               "de": "Zwei Spieße mit gegrillter marinierter Hähnchenbrust",
               "ar": "سيخان من صدر الدجاج المتبّل المشوي"
             },
@@ -648,7 +648,7 @@ export const categories: Category[] = [
             "price": "27.5",
             "desc": {
               "nl": "Twee spiesen gegrilde gemarineerde stukken kalfslende",
-              "en": "Two skewers of grilled marinated veal loin",
+              "en": "Two skewers with grilled, marinated pieces of tenderloin",
               "de": "Zwei Spieße mit gegrilltem mariniertem Kalbsrücken",
               "ar": "سيخان من قطع لحم العجل المتبّل المشوي"
             },
@@ -660,7 +660,7 @@ export const categories: Category[] = [
             "price": "29.5",
             "desc": {
               "nl": "Drie spiesen van de grill (Kebab, Shish tavuk en Shikaf)",
-              "en": "Three skewers from the grill (Kebab, Shish tavuk and Shikaf)",
+              "en": "Three charcoal-grilled skewers (Kebab, Shish tavuk and Shikaf)",
               "de": "Drei Spieße vom Grill (Kebab, Shish Tavuk und Shikaf)",
               "ar": "ثلاثة أسياخ من الشواية (كباب، شيش طاووق وشقف)"
             },
@@ -672,7 +672,7 @@ export const categories: Category[] = [
             "price": "34.5",
             "desc": {
               "nl": "Botermalse lamskoteletjes uit Nieuw Zeeland",
-              "en": "Tender lamb chops from New Zealand",
+              "en": "Delightfully tender lamb cutlets from New Zealand",
               "de": "Butterzarte Lammkoteletts aus Neuseeland",
               "ar": "ريش غنم طرية من نيوزيلندا"
             },
@@ -683,10 +683,10 @@ export const categories: Category[] = [
             "name": "Lamshaasjes",
             "price": "34.5",
             "desc": {
-              "nl": "Heerlijk gemarineerde Nieuw Zeelandse lamshaasjes, ± {?} gram",
-              "en": "Deliciously marinated New Zealand lamb fillets, about {?} grams",
-              "de": "Köstlich marinierte Lammfilets aus Neuseeland, ca. {?} Gramm",
-              "ar": "فيليه غنم نيوزيلندي متبّل بشكل لذيذ، حوالي {?} غرام"
+              "nl": "Heerlijk gemarineerde Nieuw Zeelandse lamshaasjes, ± 220 gram",
+              "en": "Deliciously marinated New Zealand lamb fillets, ± 220 grams",
+              "de": "Köstlich marinierte Lammfilets aus Neuseeland, ca. 220 Gramm",
+              "ar": "فيليه غنم نيوزيلندي متبّل بشكل لذيذ، حوالي 220 غرام"
             },
             "icons": [],
             "small": null
@@ -695,10 +695,10 @@ export const categories: Category[] = [
             "name": "Ossenhaas",
             "price": "36",
             "desc": {
-              "nl": "Gegrilde ossenhaas met champignon-roomsaus, ± {?} gram",
-              "en": "Grilled beef tenderloin with creamy mushroom sauce, about {?} grams",
-              "de": "Gegrilltes Rinderfilet mit Champignon-Rahmsauce, ca. {?} Gramm",
-              "ar": "فيليه لحم بقري مشوي مع صلصة الفطر بالكريمة، حوالي {?} غرام"
+              "nl": "Gegrilde ossenhaas met champignon-roomsaus, ± 230 gram",
+              "en": "Grilled tenderloin with creamy mushroom sauce, ± 230 grams",
+              "de": "Gegrilltes Rinderfilet mit Champignon-Rahmsauce, ca. 230 Gramm",
+              "ar": "فيليه لحم بقري مشوي مع صلصة الفطر بالكريمة، حوالي 230 غرام"
             },
             "icons": [],
             "small": null
@@ -708,7 +708,7 @@ export const categories: Category[] = [
             "price": "59",
             "desc": {
               "nl": "Bestaande uit zes soorten vlees",
-              "en": "Six kinds of meat",
+              "en": "Consists of six kinds of meat",
               "de": "Sechs Sorten Fleisch",
               "ar": "ستة أنواع من اللحوم"
             },
@@ -1053,7 +1053,7 @@ export const categories: Category[] = [
         "id": "koude-dranken",
         "title": {
           "nl": "Koude dranken",
-          "en": "Cold drinks",
+          "en": "Cold beverages",
           "de": "Kalte Getränke",
           "ar": "المشروبات الباردة"
         },
@@ -1195,14 +1195,14 @@ export const categories: Category[] = [
           },
           {
             "name": "Red Bull",
-            "price": null,
+            "price": "4.8",
             "desc": null,
             "icons": [],
             "small": null
           },
           {
             "name": "Ayran",
-            "price": null,
+            "price": "3.3",
             "desc": null,
             "icons": [],
             "small": null
@@ -1255,7 +1255,7 @@ export const categories: Category[] = [
           "id": "speciaalbier",
           "title": {
             "nl": "Speciaalbier",
-            "en": "Speciality beer",
+            "en": "Craft beers",
             "de": "Spezialbier",
             "ar": "بيرة خاصة"
           },
