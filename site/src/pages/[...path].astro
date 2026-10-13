@@ -1,0 +1,31 @@
+---
+// Every public page in every language: / (Dutch), /en/, /de/ and /ar/.
+// The addresses come from ROUTES in content/i18n.ts.
+import Home from '../components/pages/Home.astro';
+import Menu from '../components/pages/Menu.astro';
+import About from '../components/pages/About.astro';
+import Contact from '../components/pages/Contact.astro';
+import Privacy from '../components/pages/Privacy.astro';
+import { LANGS, ROUTES, type Lang, type PageKey } from '../content/i18n';
+
+export function getStaticPaths() {
+  return (Object.keys(ROUTES) as PageKey[]).flatMap((page) =>
+    LANGS.map((lang) => ({
+      params: { path: ROUTES[page][lang].replace(/^\/|\/$/g, '') || undefined },
+      props: { lang, page },
+    })),
+  );
+}
+
+interface Props {
+  lang: Lang;
+  page: PageKey;
+}
+const { lang, page } = Astro.props;
+---
+
+{page === 'home' && <Home lang={lang} />}
+{page === 'menu' && <Menu lang={lang} />}
+{page === 'about' && <About lang={lang} />}
+{page === 'contact' && <Contact lang={lang} />}
+{page === 'privacy' && <Privacy lang={lang} />}

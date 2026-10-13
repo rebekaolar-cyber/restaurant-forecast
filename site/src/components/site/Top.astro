@@ -1,0 +1,58 @@
+---
+// The header: logo, the main pages, and the four languages.
+// Sits on top of the first coloured band of every page.
+import Logo from './Logo.astro';
+import { LANGS, LANG_NAMES, href, t, type Lang, type PageKey } from '../../content/i18n';
+import { copy } from '../../content/pages';
+
+interface Props {
+  lang: Lang;
+  page: PageKey | 'notFound';
+}
+const { lang, page } = Astro.props;
+const here = page === 'notFound' ? 'home' : page;
+const current = (key: PageKey) => (key === page ? 'page' : undefined);
+---
+
+<header class="top">
+  <a class="top__logo" href={href(lang, 'home')} aria-label={`Restaurant Habibi, ${t(lang, 'Home')}`}>
+    <Logo />
+  </a>
+  {
+    page === 'menu' && (
+      <a class="btn btn--small btn--ghost top__home" href={href(lang, 'home')}>
+        <svg class="back" viewBox="0 0 18 18" aria-hidden="true"><path d="M16 9H3M8 4 3 9l5 5" fill="none" stroke="currentColor" stroke-width="1.6" /></svg>
+        <span class="top__home-t">{t(lang, 'Home')}</span>
+      </a>
+    )
+  }
+  <nav class="top__nav" aria-label={copy[lang].mainNav}>
+    <a class="top__menu" href={href(lang, 'menu')} aria-current={current('menu')}>{t(lang, 'Menu')}</a>
+    <a class="top__extra" href={href(lang, 'about')} aria-current={current('about')}>{t(lang, 'Over ons')}</a>
+    <a class="top__extra" href={href(lang, 'contact')} aria-current={current('contact')}>{t(lang, 'Contact')}</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Taal · Language · Sprache · اللغة">
+    {
+      LANGS.map((l) => (
+        <a href={href(l, here)} hreflang={l} lang={l} title={LANG_NAMES[l]} aria-current={l === lang ? 'true' : undefined}>
+          {l.toUpperCase()}
+        </a>
+      ))
+    }
+  </div>
+  <details class="langpick">
+    <summary aria-label="Taal · Language · Sprache · اللغة">
+      {lang.toUpperCase()}
+      <svg viewBox="0 0 12 8" aria-hidden="true"><path d="M1 1.5 6 6.5l5-5" /></svg>
+    </summary>
+    <div class="langpick__list">
+      {
+        LANGS.map((l) => (
+          <a href={href(l, here)} hreflang={l} lang={l} aria-current={l === lang ? 'true' : undefined}>
+            {LANG_NAMES[l]}
+          </a>
+        ))
+      }
+    </div>
+  </details>
+</header>

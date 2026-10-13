@@ -1,0 +1,9 @@
+---
+// The star pattern from the round logo, as a large ornament behind a section.
+interface Props {
+  turn?: boolean;
+}
+const { turn = false } = Astro.props;
+---
+
+<img class:list={['orn', { 'orn--turn': turn }]} src="/art/stars.svg" alt="" width="381" height="381" loading="lazy" decoding="async" />

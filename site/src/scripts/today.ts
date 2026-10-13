@@ -3,7 +3,10 @@
 // nothing anywhere. Without JavaScript the pages simply show the full week.
 
 import { week, clock, DAY_ROLLOVER } from '../content/hours';
-import { statusText } from '../content/nl.status';
+
+// The sentences come from the page itself (data attributes on the line), so the
+// same script works in every language.
+type Templates = { opensToday: string; openNow: string; closedOpensToday: string; closedOpensTomorrow: string };
 
 const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
@@ -28,6 +31,9 @@ function fill(template: string, open: number, close: number): string {
 }
 
 function update(): void {
+  const line = document.querySelector<HTMLElement>('[data-today-line]');
+  if (!line) return;
+  const tpl = line.dataset as unknown as Templates;
   let { day, minutes } = amsterdamNow();
   if (day < 0 || Number.isNaN(minutes)) return;
 
@@ -43,31 +49,24 @@ function update(): void {
 
   let text: string;
   let currentDay = day;
-  let marker: string = statusText.rowToday;
   if (minutes < evening.open) {
-    text = fill(statusText.opensToday, evening.open, evening.close);
+    text = fill(tpl.opensToday, evening.open, evening.close);
   } else if (minutes < evening.close) {
-    text = fill(statusText.openNow, evening.open, evening.close);
-    // After midnight on a late evening the open row is yesterday's, so say
-    // "open now" instead of "today".
-    marker = statusText.rowOpen;
+    text = fill(tpl.openNow, evening.open, evening.close);
   } else if (minutes >= 1440) {
     // Closed, after midnight: the next opening is later today.
-    text = fill(statusText.closedOpensToday, next.open, next.close);
+    text = fill(tpl.closedOpensToday, next.open, next.close);
     currentDay = (day + 1) % 7;
   } else {
-    text = fill(statusText.closedOpensTomorrow, next.open, next.close);
+    text = fill(tpl.closedOpensTomorrow, next.open, next.close);
   }
 
-  document.querySelectorAll('[data-today-line]').forEach((el) => {
+  document.querySelectorAll<HTMLElement>('[data-today-line]').forEach((el) => {
     el.textContent = text;
   });
   document.querySelectorAll('[data-day]').forEach((el) => {
-    const isCurrent = el.getAttribute('data-day') === String(currentDay);
-    if (isCurrent) el.setAttribute('aria-current', 'date');
+    if (el.getAttribute('data-day') === String(currentDay)) el.setAttribute('aria-current', 'date');
     else el.removeAttribute('aria-current');
-    const now = el.querySelector('[data-now]');
-    if (now) now.textContent = isCurrent ? `(${marker})` : '';
   });
 }
 

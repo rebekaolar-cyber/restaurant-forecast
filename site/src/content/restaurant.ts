@@ -1,5 +1,5 @@
 // Facts about the restaurant. Everything here came from Rebeka's project
-// notes. `null` means "not supplied yet": the page shows a marked placeholder.
+// notes and the restaurant's own channels (phone, e-mail, social media). `null` means "not supplied yet": the page shows a marked placeholder.
 
 export const restaurant = {
   name: 'Restaurant Habibi',
@@ -17,7 +17,13 @@ export const restaurant = {
   // A plain link to a map. Nothing from the map provider loads on our pages.
   mapUrl:
     'https://www.google.com/maps/search/?api=1&query=Restaurant+Habibi%2C+Wethouder+Beversstraat+185%2C+7543+BK+Enschede',
-  phone: null as string | null,
-  email: null as string | null,
+  phone: '053 432 8444' as string | null,
+  phoneIntl: '+31534328444',
+  email: 'info@habibienschede.nl' as string | null,
+  instagram: 'https://www.instagram.com/habibi_enschede/',
+  facebook: 'https://www.facebook.com/HabibiLibaneesRestaurant',
+  tiktok: 'https://www.tiktok.com/@habibi_enschede',
   seats: { restaurant: 120, binnentuin: 134 },
+  // Where the building is, from OpenStreetMap. Used by search engines; null until looked up.
+  geo: null as { latitude: number; longitude: number } | null,
 } as const;
