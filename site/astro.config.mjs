@@ -22,6 +22,13 @@ export default defineConfig({
     inlineStylesheets: 'never',
   },
   vite: {
-    build: { assetsInlineLimit: 0 },
+    build: {
+      assetsInlineLimit: 0,
+      // Keep the CSS as written. The default minifier (Lightning CSS) folds
+      // animation-timeline into the animation shorthand, which browsers then
+      // reject, so every scroll animation (the front door opening) stopped.
+      // The size difference after compression is a few kilobytes.
+      cssMinify: false,
+    },
   },
 });

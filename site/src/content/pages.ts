@@ -26,6 +26,7 @@ const nl = {
   bookVia: `Reserveren gaat via ${restaurant.bookingProvider}, het reserveringssysteem van het restaurant.`,
   mapAlt: 'Kaart van de Wethouder Beversstraat in Enschede met Restaurant Habibi',
   mapCredit: 'Kaart',
+  osmCredit: '© OpenStreetMap-bijdragers',
   mapToCome: 'Kaart volgt',
   status: {
     opensToday: 'Vandaag open van {open} tot {close}',
@@ -132,6 +133,7 @@ const en: PageCopy = {
   bookVia: `Bookings go through ${restaurant.bookingProvider}, the restaurant’s booking system.`,
   mapAlt: 'Map of Wethouder Beversstraat in Enschede showing Restaurant Habibi',
   mapCredit: 'Map',
+  osmCredit: '© OpenStreetMap contributors',
   mapToCome: 'Map to come',
   status: {
     opensToday: 'Open today from {open} to {close}',
@@ -236,6 +238,7 @@ const de: PageCopy = {
   bookVia: `Reservierungen laufen über ${restaurant.bookingProvider}, das Reservierungssystem des Restaurants.`,
   mapAlt: 'Karte der Wethouder Beversstraat in Enschede mit dem Restaurant Habibi',
   mapCredit: 'Karte',
+  osmCredit: '© OpenStreetMap-Mitwirkende',
   mapToCome: 'Karte folgt',
   status: {
     opensToday: 'Heute geöffnet von {open} bis {close}',
@@ -340,6 +343,7 @@ const ar: PageCopy = {
   bookVia: `يتم الحجز عبر ${restaurant.bookingProvider}، نظام الحجز الخاص بالمطعم.`,
   mapAlt: 'خريطة شارع فيتهاودر بيفرسسترات في إنسخيده ويظهر عليها مطعم حبيبي',
   mapCredit: 'الخريطة',
+  osmCredit: '© مساهمو OpenStreetMap',
   mapToCome: 'الخريطة لاحقًا',
   status: {
     opensToday: 'مفتوح اليوم من {open} حتى {close}',

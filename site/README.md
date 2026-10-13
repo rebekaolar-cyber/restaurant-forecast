@@ -40,8 +40,9 @@ One file, `src/pages/[...path].astro`, builds all twenty from the list in
 `src/content/i18n.ts`. The page designs are in `src/components/pages/`, the
 shared parts (header, footer, hours, map, door) in `src/components/site/`.
 
-Moving between pages plays the green double door (a browser "view
-transition", CSS only). Switching language only cross-fades. Browsers without
+Going to or from the homepage plays the green double door (a browser "view
+transition", CSS only; `/vt.js` decides which kind). Between the other pages,
+and when only the language changes, the page cross-fades. Browsers without
 this feature simply load the next page.
 
 The menu page has a switch "Met foto's / Alleen tekst": the same card with
@@ -74,11 +75,12 @@ preview. Edit them here directly from now on.
 ## The map
 
 The map in the footer and on the contact page is a picture kept with the
-site, so no map service loads on our pages. Until it is made, a marked
-"Kaart volgt" placeholder shows. To add it: export a PNG of the street from
-openstreetmap.org (Share → Image, about 1200 × 900), save it as
-`src/assets/map/map.png`, and rebuild. The pin and the credit line are drawn
-by the site.
+site (`src/assets/map/habibi-map.png`), so no map service loads on our pages.
+It was made from OpenStreetMap at zoom level 17, centred on the restaurant's
+own OpenStreetMap entry (52.20671, 6.89162). The pin and the credit line are
+drawn by the site. Clicking the map or "Route plannen" opens Google Maps.
+To change the map, replace the PNG (about 800 × 600, the restaurant in the
+middle) and rebuild. The credit "© OpenStreetMap contributors" must stay.
 
 ## Security headers
 
