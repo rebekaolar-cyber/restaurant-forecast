@@ -27,7 +27,7 @@ const { lang, page, title, description, bareTitle = false, jsonLd = [] } = Astro
 // Until PUBLIC_SITE_LIVE is "true" this is a test version: a banner points to the
 // official website and every page asks search engines to stay away.
 const live = import.meta.env.PUBLIC_SITE_LIVE === 'true';
-const site = Astro.site ?? new URL('https://habibienschede.nl');
+const site = Astro.site ?? new URL('https://www.habibienschede.nl');
 const fullTitle = bareTitle ? title : `${title} | ${restaurant.name}`;
 const c = copy[lang];
 const canonical = page === 'notFound' ? null : new URL(ROUTES[page][lang], site).href;
