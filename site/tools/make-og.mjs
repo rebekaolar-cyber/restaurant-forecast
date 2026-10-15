@@ -10,7 +10,7 @@ const stars = fs.readFileSync(root + '/public/art/stars.svg', 'utf8');
 const starsUri = 'data:image/svg+xml;base64,' + Buffer.from(stars).toString('base64');
 const photo = async (n) => 'data:image/jpeg;base64,' + (await sharp(`${root}/src/assets/photos/dishes/${n}.jpg`).resize(300, 400, { fit: 'cover' }).jpeg({ quality: 90 }).toBuffer()).toString('base64');
 const arch = 'M0,100 L0,46 L6,46 C6,40 0,39 0,31 C0,19 17,13 30,9.5 C40,6.8 47,4 50,0 C53,4 60,6.8 70,9.5 C83,13 100,19 100,31 C100,39 94,40 94,46 L100,46 L100,100';
-const dishes = ['hommus', 'shish-tavuk', 'muhammara'];
+const dishes = ['hommus', 'halawet-el-jibn', 'muhammara'];
 const W = 1200, H = 630, aw = 186, ah = 248, gap = 30, y0 = 214;
 const x0 = W - 64 - 3 * aw - 2 * gap;
 let arches = '';
