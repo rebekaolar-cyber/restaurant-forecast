@@ -1,0 +1,85 @@
+---
+// The dashboard. This file is only an empty frame: it holds no figures.
+// scripts/dashboard.ts checks the login first, and only then fetches and
+// draws the forecast (scripts/dashboard-view.ts).
+import Staff from '../../layouts/Staff.astro';
+import '../../styles/dashboard.css';
+import { staffText as t } from '../../content/nl.staff';
+
+const d = t.dashboard;
+---
+
+<Staff title={d.pageTitle}>
+  <button slot="actions" class="button button--small button--quiet" type="button" data-logout hidden>
+    {d.logout}
+  </button>
+
+  <noscript><p class="notice">{d.noscript}</p></noscript>
+
+  <p class="muted" data-checking role="status" hidden>{d.checking}</p>
+
+  <div class="notice" data-offline hidden>
+    <h2>{d.offlineTitle}</h2>
+    <p>{t.errors.network}</p>
+    <button class="button button--small" type="button" data-retry>{d.retry}</button>
+  </div>
+
+  <div class="dash" data-dashboard hidden>
+    <p class="dash__restaurant" data-restaurant hidden></p>
+    <h1>{d.title}</h1>
+
+    <p class="muted" data-restaurant-state="loading" role="status">{d.loading}</p>
+
+    <div class="notice" data-restaurant-state="empty" hidden>
+      <h2>{d.noRestaurantTitle}</h2>
+      <p>{d.noRestaurant}</p>
+    </div>
+
+    <div class="notice" data-restaurant-state="error" role="alert" hidden>
+      <h2>{d.loadErrorTitle}</h2>
+      <p>{d.loadError}</p>
+      <button class="button button--small" type="button" data-retry>{d.retry}</button>
+    </div>
+
+    <section data-forecast hidden>
+      <div class="dash__meta">
+        <p class="small muted" data-updated role="status"></p>
+        <button class="linklike small" type="button" data-refresh hidden>{d.refresh}</button>
+      </div>
+
+      <p class="notice" data-note="placeholder" hidden>{d.placeholderModel}</p>
+      <p class="notice" data-note="stale" role="alert" hidden>{d.stale}</p>
+      <div class="notice" data-note="empty" hidden>
+        <h2>{d.emptyTitle}</h2>
+        <p>{d.empty}</p>
+      </div>
+      <p class="small muted" data-note="weather" hidden>{d.noWeatherYet}</p>
+
+      <p class="muted" data-state="loading" role="status" hidden>{d.loading}</p>
+
+      <div class="notice" data-state="error" role="alert" hidden>
+        <h2>{d.loadErrorTitle}</h2>
+        <p>{d.loadError}</p>
+        <button class="button button--small" type="button" data-retry-forecast>{d.retry}</button>
+      </div>
+
+      <div class="notice" data-state="offline" role="alert" hidden>
+        <h2>{d.offlineTitle}</h2>
+        <p>{t.errors.network}</p>
+        <button class="button button--small" type="button" data-retry-forecast>{d.retry}</button>
+      </div>
+
+      <p class="small muted" data-note="hint" hidden>{d.hint}</p>
+      <p class="small muted" data-note="legend" hidden></p>
+
+      {/* Column names (the roster letters), filled in by the script. The full
+          role names are read out per line for screen readers. */}
+      <div class="days__head" data-list-head aria-hidden="true" hidden></div>
+      <ul role="list" class="days" data-list hidden></ul>
+    </section>
+  </div>
+
+  <script>
+    import '../../scripts/dashboard';
+  </script>
+</Staff>

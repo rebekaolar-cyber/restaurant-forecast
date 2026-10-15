@@ -1,0 +1,97 @@
+---
+import Staff from '../../layouts/Staff.astro';
+import { staffText as t } from '../../content/nl.staff';
+---
+
+<Staff title={t.login.title}>
+  <div class="panel">
+    <noscript><p class="notice">{t.login.noscript}</p></noscript>
+
+    {/* Hidden until the script has checked that nobody is logged in yet. */}
+    <section data-view="login" hidden>
+      <h1 tabindex="-1">{t.login.title}</h1>
+      <p class="muted">{t.login.intro}</p>
+
+      <form class="form" data-login method="post" action="/login/">
+        <div class="field">
+          <label for="email">{t.login.email}</label>
+          <input
+            class="input"
+            id="email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            inputmode="email"
+            autocapitalize="none"
+            spellcheck="false"
+            required
+          />
+        </div>
+        <div class="field">
+          <label for="password">{t.login.password}</label>
+          <div class="password">
+            <input
+              class="input"
+              id="password"
+              name="password"
+              type="password"
+              autocomplete="current-password"
+              required
+            />
+            <button type="button" data-toggle-password aria-controls="password" aria-pressed="false">
+              {t.login.show}
+            </button>
+          </div>
+        </div>
+        <p class="notice" role="alert" data-message hidden></p>
+        <button class="button" type="submit">{t.login.submit}</button>
+      </form>
+
+      <div class="below">
+        <button class="linklike" type="button" data-open="reset">{t.login.forgot}</button>
+        <p class="small muted">{t.login.noAccount}</p>
+        <a class="link small" href="/">{t.login.backToSite}</a>
+      </div>
+    </section>
+
+    <section data-view="reset" hidden>
+      <h1 tabindex="-1">{t.reset.title}</h1>
+      <p class="muted">{t.reset.intro}</p>
+
+      <form class="form" data-reset method="post" action="/login/">
+        <div class="field">
+          <label for="reset-email">{t.login.email}</label>
+          <input
+            class="input"
+            id="reset-email"
+            name="email"
+            type="email"
+            autocomplete="username"
+            inputmode="email"
+            autocapitalize="none"
+            spellcheck="false"
+            required
+          />
+        </div>
+        <p class="notice" role="alert" data-message hidden></p>
+        <button class="button" type="submit">{t.reset.submit}</button>
+      </form>
+
+      <div class="below">
+        <button class="linklike" type="button" data-open="login">{t.reset.back}</button>
+      </div>
+    </section>
+
+    <section data-view="sent" hidden>
+      <h1 tabindex="-1">{t.reset.title}</h1>
+      <p class="notice" role="status">{t.reset.sent}</p>
+      <div class="below">
+        <button class="linklike" type="button" data-open="login">{t.reset.back}</button>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    import '../../scripts/login';
+  </script>
+</Staff>

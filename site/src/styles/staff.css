@@ -1,0 +1,169 @@
+/* Staff pages: login, choosing a password, dashboard. Same brand, fewer parts. */
+
+.staff-header {
+  border-bottom: 1px solid var(--line);
+}
+
+.staff-header .bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 1rem;
+}
+
+.staff-header .logo {
+  display: block;
+  padding-block: 0.25rem;
+}
+
+.staff-header .logo img {
+  width: auto;
+  height: 2.75rem;
+}
+
+.staff-main {
+  padding-block: clamp(2.25rem, 1.5rem + 4vw, 4.5rem) var(--section);
+}
+
+/* A narrow column for forms. */
+.panel {
+  max-width: 26rem;
+}
+
+.panel h1 {
+  font-size: clamp(2rem, 1.7rem + 1.4vw, 2.75rem);
+}
+
+.panel h1:focus {
+  outline: none;
+}
+
+.panel h1 + p {
+  margin-top: 0.75rem;
+}
+
+.form {
+  display: grid;
+  gap: 1.25rem;
+  margin-top: 2rem;
+}
+
+.field {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.field label {
+  font-weight: 500;
+}
+
+.input {
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.6rem 0.9rem;
+  border: 1.5px solid var(--ink);
+  border-radius: 0.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  font: inherit;
+  line-height: 1.3;
+}
+
+.input:focus-visible {
+  outline: 2px solid var(--magenta);
+  outline-offset: 2px;
+  border-radius: 0.5rem;
+}
+
+/* Password field with its "Toon" button inside the same frame. */
+.password {
+  position: relative;
+}
+
+.password .input {
+  padding-right: 5.5rem;
+}
+
+.password button {
+  position: absolute;
+  top: 0.3rem;
+  right: 0.3rem;
+  bottom: 0.3rem;
+  min-width: 4.5rem;
+  padding-inline: 0.75rem;
+  border: 0;
+  border-radius: 0.35rem;
+  background: var(--mist);
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--small);
+  cursor: pointer;
+}
+
+.form .button {
+  width: 100%;
+}
+
+.button[disabled] {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+/* A message that needs attention: the magenta mark means "look here". */
+.notice {
+  padding: 0.85rem 1rem;
+  border-left: 0.25rem solid var(--magenta);
+  background: var(--mist);
+  line-height: 1.45;
+}
+
+.notice h2 {
+  margin-bottom: 0.25rem;
+  font-family: var(--sans);
+  font-size: var(--text);
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.notice .button {
+  margin-top: 1rem;
+}
+
+/* A button that reads as a link. */
+.linklike {
+  display: inline-block;
+  padding: 0.65rem 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.22em;
+  cursor: pointer;
+}
+
+.linklike:hover {
+  text-decoration-color: var(--magenta);
+  text-decoration-thickness: 2px;
+}
+
+.below {
+  display: grid;
+  justify-items: start;
+  gap: 0.25rem;
+  margin-top: 1.25rem;
+}
+
+.button--quiet {
+  background: var(--paper);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+}
+
+.button--quiet:hover {
+  box-shadow:
+    inset 0 0 0 1.5px var(--ink),
+    inset 0 -0.3rem 0 0 var(--magenta);
+}

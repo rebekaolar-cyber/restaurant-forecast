@@ -1,0 +1,28 @@
+---
+// Opening hours, one line per day, plus the "open today" line.
+// The script in scripts/today.ts marks today and fills the line in the
+// visitor's browser; without JavaScript the full week simply shows.
+import { week, range } from '../../content/hours';
+import { t, type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const days = ['Maandag', 'Dinsdag', 'Woensdag', 'Donderdag', 'Vrijdag', 'Zaterdag', 'Zondag'];
+const s = copy[lang].status;
+---
+
+<dl class="hrs">
+  {
+    week.map((day, i) => (
+      <div data-day={i}>
+        <dt>{t(lang, days[i])}</dt>
+        <dd>{range(day)}</dd>
+      </div>
+    ))
+  }
+</dl>
+<p class="today" data-today-line data-opens-today={s.opensToday} data-open-now={s.openNow} data-closed-opens-today={s.closedOpensToday} data-closed-opens-tomorrow={s.closedOpensTomorrow}></p>
+<p class="hrs__more">{t(lang, 'Elke dag open voor diner')}</p>

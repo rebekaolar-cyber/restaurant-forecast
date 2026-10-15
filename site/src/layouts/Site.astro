@@ -1,0 +1,100 @@
+---
+// Layout of the public pages, in four languages.
+import '../styles/fonts.css';
+import '../styles/site.css';
+import Sprite from '../components/site/Sprite.astro';
+import PageDoor from '../components/site/PageDoor.astro';
+import Foot from '../components/site/Foot.astro';
+import { LANGS, OG_LOCALE, ROUTES, dir, t, type Lang, type PageKey } from '../content/i18n';
+import { copy } from '../content/pages';
+import { restaurant } from '../content/restaurant';
+import serifFont from '../assets/fonts/brygada-1918-latin-wght-normal.woff2?url';
+import sansFont from '../assets/fonts/alegreya-sans-latin-400-normal.woff2?url';
+
+interface Props {
+  lang: Lang;
+  page: PageKey | 'notFound';
+  title: string;
+  description?: string;
+  /** Use the title exactly as given (home page). */
+  bareTitle?: boolean;
+  /** Structured data for search engines (schema.org), as plain objects. */
+  jsonLd?: object[];
+}
+
+const { lang, page, title, description, bareTitle = false, jsonLd = [] } = Astro.props;
+
+// Until PUBLIC_SITE_LIVE is "true" this is a test version: a banner points to the
+// official website and every page asks search engines to stay away.
+const live = import.meta.env.PUBLIC_SITE_LIVE === 'true';
+const site = Astro.site ?? new URL('https://www.habibienschede.nl');
+const fullTitle = bareTitle ? title : `${title} | ${restaurant.name}`;
+const c = copy[lang];
+const canonical = page === 'notFound' ? null : new URL(ROUTES[page][lang], site).href;
+const ogImage = new URL('/og.jpg', site).href;
+---
+
+<!doctype html>
+<html lang={lang} dir={dir(lang)}>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>{fullTitle}</title>
+    {description && <meta name="description" content={description} />}
+    {(!live || page === 'notFound') && <meta name="robots" content="noindex, nofollow" />}
+    <meta name="theme-color" content="#8a2b1f" />
+    <meta name="format-detection" content="telephone=no" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="preload" href={serifFont} as="font" type="font/woff2" crossorigin />
+    <link rel="preload" href={sansFont} as="font" type="font/woff2" crossorigin />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {
+      page !== 'notFound' &&
+        LANGS.map((l) => <link rel="alternate" hreflang={l} href={new URL(ROUTES[page][l], site).href} />)
+    }
+    {page !== 'notFound' && <link rel="alternate" hreflang="x-default" href={new URL(ROUTES[page].nl, site).href} />}
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={restaurant.name} />
+    <meta property="og:locale" content={OG_LOCALE[lang]} />
+    <meta property="og:title" content={fullTitle} />
+    {description && <meta property="og:description" content={description} />}
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Restaurant Habibi, the taste of Lebanon" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <!-- tells the page door apart from a change of language; must run before the first paint -->
+    <script is:inline src="/vt.js"></script>
+    {jsonLd.map((data) => <script type="application/ld+json" set:html={JSON.stringify(data)} />)}
+  </head>
+  <body>
+    <a class="skip" href="#inhoud">{c.skip}</a>
+    {
+      !live && (
+        <aside class="test-banner" aria-label={c.testLabel}>
+          {c.testBanner} <a href={restaurant.currentWebsite}>{restaurant.currentWebsiteLabel}</a>.
+        </aside>
+      )
+    }
+    <Sprite />
+    <main id="inhoud">
+      <slot />
+      {
+        page !== 'notFound' && (
+          <a class="btn fab" href={restaurant.bookingUrl} rel="noopener">
+            {t(lang, 'Reserveren')}
+          </a>
+        )
+      }
+    </main>
+    <Foot lang={lang} />
+    <PageDoor />
+    <script>
+      import '../scripts/auth-handoff';
+      import '../scripts/today';
+    </script>
+  </body>
+</html>

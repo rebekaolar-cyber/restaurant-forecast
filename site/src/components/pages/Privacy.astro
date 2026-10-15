@@ -1,0 +1,49 @@
+---
+// Privacy statement: what the website does and does not do with visitors' data.
+import Site from '../../layouts/Site.astro';
+import Top from '../site/Top.astro';
+import Orn from '../site/Orn.astro';
+import { type Lang } from '../../content/i18n';
+import { copy } from '../../content/pages';
+
+interface Props {
+  lang: Lang;
+}
+const { lang } = Astro.props;
+const c = copy[lang];
+const p = c.privacy;
+---
+
+<Site lang={lang} page="privacy" title={c.meta.privacy.title} description={c.meta.privacy.description}>
+  <section class="room room--teal phead">
+    <Top lang={lang} page="privacy" />
+    <Orn turn />
+    <div class="wrap">
+      <h1>{c.meta.privacy.title}</h1>
+    </div>
+  </section>
+
+  <section class="room room--sand">
+    <div class="wrap">
+      <div class="prose">
+        <p class="lead">{p.intro}</p>
+        {
+          p.sections.map(([heading, paragraphs], i) => (
+            <>
+              <h2>{heading}</h2>
+              {paragraphs.map((text) => (
+                <p>{text}</p>
+              ))}
+              {i === 0 && (
+                <p class="todo" data-tag="TODO">
+                  {p.wanted}
+                </p>
+              )}
+            </>
+          ))
+        }
+        <p class="privacy__updated">{p.updated}</p>
+      </div>
+    </div>
+  </section>
+</Site>

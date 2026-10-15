@@ -1,0 +1,6 @@
+# Cloudflare Pages reads this file. Old addresses that people may still have.
+# 302 = temporary, so the target can change later without browsers remembering it.
+
+# The current website's booking page: straight to the restaurant's TheFork booking.
+/reserveren   https://widget.thefork.com/nl/b248b8ae-4043-4bc2-ad8b-5c5d4979147c?step=date&utm_source=habibienschede.nl  302
+/reserveren/  https://widget.thefork.com/nl/b248b8ae-4043-4bc2-ad8b-5c5d4979147c?step=date&utm_source=habibienschede.nl  302

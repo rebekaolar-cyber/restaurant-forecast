@@ -1,0 +1,27 @@
+---
+// Shown for any address that does not exist. Dutch first, with one line in English.
+import Site from '../layouts/Site.astro';
+import Top from '../components/site/Top.astro';
+import Orn from '../components/site/Orn.astro';
+import { href } from '../content/i18n';
+import { copy } from '../content/pages';
+
+const nl = copy.nl.notFound;
+const en = copy.en.notFound;
+---
+
+<Site lang="nl" page="notFound" title={copy.nl.meta.notFound.title}>
+  <section class="room room--teal phead lost">
+    <Top lang="nl" page="notFound" />
+    <Orn turn />
+    <div class="wrap stack">
+      <h1>{nl.heading}</h1>
+      <p class="lead">{nl.text}</p>
+      <p class="lost__en" lang="en">{en.heading}. {en.text}</p>
+      <p class="lost__links">
+        <a class="btn" href={href('nl', 'home')}>{nl.home}</a>
+        <a class="btn btn--ghost" href={href('en', 'home')} lang="en">{en.home}</a>
+      </p>
+    </div>
+  </section>
+</Site>
