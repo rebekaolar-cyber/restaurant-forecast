@@ -532,8 +532,7 @@ export const categories: Category[] = [
             "icons": [
               "gf"
             ],
-            "small": null,
-            "photo": "jibneh-mushwiyeh"
+            "small": null
           },
           {
             "name": "Kawurma",
@@ -640,8 +639,7 @@ export const categories: Category[] = [
               "ar": "سيخان من صدر الدجاج المتبّل المشوي"
             },
             "icons": [],
-            "small": null,
-            "photo": "shish-tavuk"
+            "small": null
           },
           {
             "name": "Shikaf",
@@ -897,7 +895,8 @@ export const categories: Category[] = [
               "ar": "دلال حقيقي (لشخصين)"
             },
             "icons": [],
-            "small": null
+            "small": null,
+            "photo": "grand-dessert"
           },
           {
             "name": "Bakdash",
