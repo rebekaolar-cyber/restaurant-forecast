@@ -5,7 +5,7 @@ import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = ({ site }) => {
   const live = import.meta.env.PUBLIC_SITE_LIVE === 'true';
-  const sitemap = new URL('/sitemap.xml', site ?? 'https://habibienschede.nl').href;
+  const sitemap = new URL('/sitemap.xml', site ?? 'https://www.habibienschede.nl').href;
   const body = live
     ? `User-agent: *\nDisallow: /login/\nDisallow: /dashboard/\n\nSitemap: ${sitemap}\n`
     : `# Test version: please do not index.\nUser-agent: *\nDisallow: /\n`;

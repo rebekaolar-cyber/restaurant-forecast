@@ -237,6 +237,27 @@ Where the code is:
 The logo files as supplied are in `brand/originals/`. The versions the site
 uses are SVG files in `src/assets/brand/`. See `brand/README.md`.
 
+## Going live on habibienschede.nl
+
+The domain, its DNS and the restaurant's e-mail all stay at Neostrada, exactly
+as they are. Only the website part changes:
+
+- `www.habibienschede.nl` becomes a CNAME to `habibi-site.pages.dev` (the old
+  `www` A and AAAA records are removed). Add `www.habibienschede.nl` under
+  Custom domains in Cloudflare Pages first.
+- `habibienschede.nl` keeps pointing to the old hosting, which forwards every
+  address permanently (301) to the same path on `https://www.habibienschede.nl`.
+  Set this in the hosting itself, never by changing the domain's `@` records.
+- Old page addresses that don't exist on the new site get a 301 in
+  `public/_redirects`.
+- Then set `PUBLIC_SITE_LIVE=true` in Cloudflare and redeploy.
+
+E-mail is untouched: `mail`, `imap`, `pop`, `smtp`, `webmail`, `autodiscover`,
+`autoconfig`, MX, SPF, DKIM and DMARC records are separate lines in the DNS and
+point to the hosting server directly. Take a screenshot of the DNS list before
+changing anything; undoing the switch means putting the `www` A and AAAA
+records back and removing the forwarding.
+
 ## Cloudflare Pages settings
 
 | Setting | Value |

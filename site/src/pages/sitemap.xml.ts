@@ -4,7 +4,7 @@ import type { APIRoute } from 'astro';
 import { LANGS, ROUTES, type PageKey } from '../content/i18n';
 
 export const GET: APIRoute = ({ site }) => {
-  const base = site ?? new URL('https://habibienschede.nl');
+  const base = site ?? new URL('https://www.habibienschede.nl');
   const abs = (path: string) => new URL(path, base).href;
   const urls = (Object.keys(ROUTES) as PageKey[]).flatMap((page) =>
     LANGS.map((lang) => {

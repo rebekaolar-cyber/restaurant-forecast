@@ -9,7 +9,7 @@ import { week, clock } from './hours';
 import { categories, type Dish, type Section } from './menu';
 import { t } from './i18n';
 
-const SITE = 'https://habibienschede.nl';
+const SITE = 'https://www.habibienschede.nl';
 const abs = (path: string) => new URL(path, SITE).href;
 
 const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
