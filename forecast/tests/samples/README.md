@@ -13,3 +13,20 @@ these files, so they need no network.
 
 Daily values asked for: `temperature_2m_max`, `precipitation_sum`, `wind_speed_10m_max`,
 `sunshine_duration`, with `timezone=Europe/Amsterdam`.
+
+# Made-up import files
+
+Synthetic files for the importer tests. **Every number in them is invented**; none comes from
+the restaurant's real exports. They only copy the *shape* of the real files: the header, the
+date format, the service labels (`Di-zo`, `maandag`, `Maandag vanaf 10 augustus`, `2e paasdag`,
+empty), the channels and the way an offer is written (`0` for none).
+
+| File | What it stands for |
+|---|---|
+| `thefork_covers_month.csv` | TheFork "evolution of covers", exported per month |
+| `thefork_covers_week.csv` | the same, exported per week (Mondays) |
+| `thefork_covers_day.csv` | the same, exported per day |
+| `thefork_covers_with_guest_name.csv` | a file with one column too many: must be refused |
+| `roster_counts.csv` | our own roster format, `date,role,planned_count`, letters and words mixed |
+| `roster_unknown_role.csv` | a role that does not exist: must be refused |
+| `roster_with_names.csv` | a roster with a name column: must be refused |

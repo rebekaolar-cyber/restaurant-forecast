@@ -30,6 +30,10 @@ TABLES = [
     "receipts",
     "forecasts",
     "forecast_overrides",
+    "staffing_rules_retired",
+    "covers",
+    "rosters",
+    "forecast_reviews",
 ]
 
 

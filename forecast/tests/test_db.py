@@ -143,3 +143,39 @@ def test_gives_up_after_three_tries_and_says_why():
         db.select("restaurants", "id", order="id")
     assert "could not reach the database (ConnectionError)" in str(caught.value)
     assert KEY not in str(caught.value)
+
+
+def test_select_with_a_limit_and_newest_first_asks_for_just_that():
+    db, session = make([FakeResponse(200, [{"opened_at": "2026-10-09T20:00:00+00:00"}])])
+    rows = db.select("receipts", "opened_at", [("restaurant_id", "eq", "abc")], order="opened_at.desc", limit=1)
+    assert len(rows) == 1 and len(session.calls) == 1
+    assert session.calls[0]["params"][:4] == [("select", "opened_at"), ("order", "opened_at.desc"), ("limit", "1"), ("offset", "0")]
+
+
+def test_a_limit_larger_than_a_page_is_fetched_in_pages():
+    page = [{"n": n} for n in range(1000)]
+    db, session = make([FakeResponse(200, page), FakeResponse(200, page[:500])])
+    assert len(db.select("bookings", "n", order="n", limit=1500)) == 1500
+    assert [dict(call["params"])["limit"] for call in session.calls] == ["1000", "500"]
+
+
+def test_a_moment_in_time_is_sent_as_utc():
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+
+    three_at_night = datetime(2026, 10, 10, 3, 0, tzinfo=ZoneInfo("Europe/Amsterdam"))
+    db, session = make([FakeResponse(200, [])])
+    db.select("receipts", "guests", [("opened_at", "lt", three_at_night)], order="opened_at")
+    assert ("opened_at", "lt.2026-10-10T01:00:00Z") in session.calls[0]["params"]
+    with pytest.raises(ValueError, match="without a timezone"):
+        db.select("receipts", "guests", [("opened_at", "lt", datetime(2026, 10, 10, 3, 0))], order="opened_at")
+
+
+def test_delete_needs_a_condition_and_sends_only_that():
+    db, session = make([FakeResponse(204)])
+    with pytest.raises(ValueError, match="at least one condition"):
+        db.delete("bookings", [])
+    assert session.calls == []
+    db.delete("bookings", [("restaurant_id", "eq", "abc")])
+    call = session.calls[0]
+    assert (call["method"], call["url"], call["params"]) == ("DELETE", f"{URL}/rest/v1/bookings", [("restaurant_id", "eq.abc")])

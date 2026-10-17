@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import Sequence
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -23,10 +24,62 @@ REPO = Path(__file__).resolve().parents[2]
 SAMPLES = Path(__file__).resolve().parent / "samples"
 SEEDED_RESTAURANT = "35f0d253-0e43-4e2f-8c23-d52b4ca159f7"
 PORT = 54330
+# The tests fix the clock at the night of 10 October 2026. The seed writes its 14 placeholder
+# forecasts from the real today, so the owner fixture moves them to start on this day instead.
+SEED_TODAY = date(2026, 10, 10)
+
+
+WEATHER_CSV = SAMPLES / "daily_weather_2024-10-09_to_2026-10-23.csv"
+# The seeded test restaurant, as the code sees it after reading the restaurants table.
+HABIBI = {
+    "id": SEEDED_RESTAURANT,
+    "name": "Restaurant Habibi",
+    "latitude": 52.2066,
+    "longitude": 6.8914,
+    "timezone": "Europe/Amsterdam",
+    "seats": 254,
+}
 
 
 def sample(name: str) -> dict:
     return json.loads((SAMPLES / name).read_text(encoding="utf-8"))
+
+
+def weather_sample() -> dict:
+    """The real weather saved from the database: {day: row}. The last 14 days are a forecast."""
+    import csv
+    from datetime import date
+
+    with WEATHER_CSV.open(encoding="utf-8") as handle:
+        return {date.fromisoformat(row["date"]): row for row in csv.DictReader(handle)}
+
+
+def measured_weather() -> dict:
+    return {day: row for day, row in weather_sample().items() if row["is_forecast"] == "false"}
+
+
+def open_meteo_answer(first_day, last_day) -> dict:
+    """An answer shaped like Open-Meteo's, built from the saved weather, for the nightly job tests."""
+    from datetime import timedelta
+
+    rows = weather_sample()
+    days = [first_day + timedelta(days=n) for n in range((last_day - first_day).days + 1)]
+    return {
+        "daily_units": {
+            "time": "iso8601",
+            "temperature_2m_max": "°C",
+            "precipitation_sum": "mm",
+            "wind_speed_10m_max": "km/h",
+            "sunshine_duration": "s",
+        },
+        "daily": {
+            "time": [day.isoformat() for day in days],
+            "temperature_2m_max": [float(rows[day]["temp_max"]) for day in days],
+            "precipitation_sum": [float(rows[day]["rain_mm"]) for day in days],
+            "wind_speed_10m_max": [float(rows[day]["wind_max"]) for day in days],
+            "sunshine_duration": [float(rows[day]["sunshine_hours"]) * 3600 for day in days],
+        },
+    }
 
 
 # ------------------------------------------------------------------------------------------------
@@ -86,17 +139,36 @@ class LocalDatabase:
     def __init__(self, connection):
         self._connection = connection
 
-    def select(self, table: str, columns: str, filters: Sequence[Filter] = (), *, order: str) -> list[dict]:
+    def select(
+        self, table: str, columns: str, filters: Sequence[Filter] = (), *, order: str, limit: int | None = None
+    ) -> list[dict]:
         from psycopg import sql
 
         where, values = self._where(filters)
-        query = sql.SQL("select coalesce(json_agg(t), '[]'::json) from (select {} from public.{}{} order by {}) t").format(
+        ordering = []
+        for part in order.split(","):
+            name, _, direction = part.strip().partition(".")
+            if direction not in ("", "asc", "desc"):
+                raise ValueError(f"Unknown order {part!r}")
+            ordering.append(sql.Identifier(name) + sql.SQL(" desc" if direction == "desc" else " asc"))
+        query = sql.SQL(
+            "select coalesce(json_agg(t), '[]'::json) from (select {} from public.{}{} order by {}{}) t"
+        ).format(
             sql.SQL(", ").join(sql.Identifier(c.strip()) for c in columns.split(",")),
             sql.Identifier(table),
             where,
-            sql.Identifier(order),
+            sql.SQL(", ").join(ordering),
+            sql.SQL("") if limit is None else sql.SQL(" limit {}").format(sql.Literal(int(limit))),
         )
         return self._connection.execute(query, values).fetchone()[0]
+
+    def delete(self, table: str, filters: Sequence[Filter]) -> None:
+        from psycopg import sql
+
+        if not filters:
+            raise ValueError("delete needs at least one condition")
+        where, values = self._where(filters)
+        self._connection.execute(sql.SQL("delete from public.{}{}").format(sql.Identifier(table), where), values)
 
     def count(self, table: str, filters: Sequence[Filter] = ()) -> int:
         from psycopg import sql
@@ -199,8 +271,35 @@ def owner(local_postgres):
     import psycopg
 
     with psycopg.connect(local_postgres, autocommit=True) as connection:
-        connection.execute("truncate public.daily_weather, public.bookings, public.receipts")
+        connection.execute(
+            "truncate public.daily_weather, public.bookings, public.receipts, public.forecast_overrides, public.forecasts, "
+            "public.covers, public.rosters, public.forecast_reviews"
+        )
+        # Back to the starting rows: the seed puts the 14 placeholder forecasts in again.
+        connection.execute((REPO / "supabase" / "seed.sql").read_text(encoding="utf-8"))
+        # The seed starts them on the real today; the tests live on SEED_TODAY. Shift the
+        # placeholders so they cover SEED_TODAY and the 13 days after it, whatever the real date.
+        # In two steps, so no row ever lands on a date another placeholder still holds.
+        first = connection.execute("select min(date) from public.forecasts where model = 'placeholder'").fetchone()[0]
+        connection.execute("update public.forecasts set date = date + 36500 where model = 'placeholder'")
+        connection.execute(
+            "update public.forecasts set date = date - 36500 + %s where model = 'placeholder'",
+            [(SEED_TODAY - first).days],
+        )
         yield connection
+
+
+def put_weather(owner, first_day, last_day, *, measured_through=None) -> None:
+    """Copies saved weather into the throwaway database, as the weather loader would have."""
+    rows = weather_sample()
+    for day, row in rows.items():
+        if first_day <= day <= last_day:
+            is_forecast = row["is_forecast"] == "true" if measured_through is None else day > measured_through
+            owner.execute(
+                "insert into public.daily_weather (restaurant_id, date, temp_max, rain_mm, wind_max, sunshine_hours, is_forecast) "
+                "values (%s, %s, %s, %s, %s, %s, %s) on conflict (restaurant_id, date) do update set is_forecast = excluded.is_forecast",
+                [SEEDED_RESTAURANT, day, row["temp_max"], row["rain_mm"], row["wind_max"], row["sunshine_hours"], is_forecast],
+            )
 
 
 @pytest.fixture

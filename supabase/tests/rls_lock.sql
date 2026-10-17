@@ -19,9 +19,11 @@ declare
   outsider  uuid := gen_random_uuid();
   tables    text[] := array[
     'restaurants', 'restaurant_members', 'staffing_rules', 'daily_weather',
-    'bookings', 'receipts', 'forecasts', 'forecast_overrides'
+    'bookings', 'receipts', 'forecasts', 'forecast_overrides', 'staffing_rules_retired',
+    'covers', 'rosters', 'forecast_reviews'
   ];
   job_only  text[] := array['bookings', 'receipts'];
+  retired   text[] := array['staffing_rules_retired'];  -- set aside, closed to everyone
   persona   record;
   step      record;
   t         text;
@@ -57,8 +59,8 @@ begin
     insert into public.restaurant_members (user_id, restaurant_id)
     values (member_a, rest_a), (member_b, rest_b);
 
-    insert into public.staffing_rules (restaurant_id, role, guests_per_staff, min_staff)
-    values (rest_a, 'server', 20, 1), (rest_b, 'server', 20, 1);
+    insert into public.staffing_rules (restaurant_id, guests_from, servers, bar_staff, runners, food_staff, cooks)
+    values (rest_a, 100, 3, 1, 1, 2, 4), (rest_b, 100, 3, 1, 1, 2, 4);
 
     insert into public.daily_weather (restaurant_id, date, temp_max)
     values (rest_a, '2099-01-01', 10), (rest_b, '2099-01-01', 10);
@@ -69,11 +71,21 @@ begin
     insert into public.receipts (restaurant_id, opened_at, guests, total)
     values (rest_a, now(), 2, 50), (rest_b, now(), 2, 50);
 
-    insert into public.forecasts (restaurant_id, date, predicted_guests, servers, cooks, model)
-    values (rest_a, '2099-01-01', 10, 1, 1, 'lock-test'), (rest_b, '2099-01-01', 10, 1, 1, 'lock-test');
+    insert into public.forecasts (restaurant_id, date, predicted_guests, servers, bar_staff, runners, food_staff, cooks, model)
+    values (rest_a, '2099-01-01', 10, 1, 1, 1, 1, 1, 'lock-test'), (rest_b, '2099-01-01', 10, 1, 1, 1, 1, 1, 'lock-test');
 
-    insert into public.forecast_overrides (restaurant_id, date, servers, cooks)
-    values (rest_a, '2099-01-01', 1, 1), (rest_b, '2099-01-01', 1, 1);
+    insert into public.forecast_overrides (restaurant_id, date, servers, bar_staff, runners, food_staff, cooks)
+    values (rest_a, '2099-01-01', 1, 1, 1, 1, 1), (rest_b, '2099-01-01', 1, 1, 1, 1, 1);
+
+    insert into public.covers (restaurant_id, period_start, period_end, service, channel, offer, covers, bookings, no_shows, cancellations, late_cancellations)
+    values (rest_a, '2099-01-01', '2099-01-31', 'Di-zo', 'Offline', '', 10, 4, 0, 1, 0),
+           (rest_b, '2099-01-01', '2099-01-31', 'Di-zo', 'Offline', '', 10, 4, 0, 1, 0);
+
+    insert into public.rosters (restaurant_id, date, role, planned_count)
+    values (rest_a, '2099-01-01', 'servers', 3), (rest_b, '2099-01-01', 'servers', 3);
+
+    insert into public.forecast_reviews (restaurant_id, date, actual_guests, verdict)
+    values (rest_a, '2099-01-01', 12, 'right'), (rest_b, '2099-01-01', 12, 'right');
 
     -- ---------------------------------------------------------------------------------------
     -- Part 1: what can each visitor READ, in every table?
@@ -97,6 +109,7 @@ begin
         expected := case
           when persona.db_role = 'anon' then 'no access'
           when t = any (job_only)       then 'no access'
+          when t = any (retired)        then 'no access'
           when persona.home is null     then '0 rows'
           else '1 row, own restaurant only'
         end;
@@ -137,6 +150,18 @@ begin
          'change forecasts',
          'update public.forecasts set servers = 99',
          'no access'),
+        ('1 anonymous visitor', 'anon', null::uuid,
+         'add a review',
+         format('insert into public.forecast_reviews (restaurant_id, date, verdict) values (%L, ''2099-02-01'', ''right'')', rest_a),
+         'no access'),
+        ('1 anonymous visitor', 'anon', null::uuid,
+         'change covers',
+         'update public.covers set covers = 99',
+         'no access'),
+        ('1 anonymous visitor', 'anon', null::uuid,
+         'change rosters',
+         'update public.rosters set planned_count = 99',
+         'no access'),
 
         ('2 logged in, not a member', 'authenticated', outsider,
          'make themselves a member of restaurant A',
@@ -158,6 +183,26 @@ begin
          'change forecasts',
          'update public.forecasts set servers = 99',
          'no access'),
+        ('2 logged in, not a member', 'authenticated', outsider,
+         'add a review for restaurant A',
+         format('insert into public.forecast_reviews (restaurant_id, date, verdict) values (%L, ''2099-02-01'', ''right'')', rest_a),
+         'blocked by row level security'),
+        ('2 logged in, not a member', 'authenticated', outsider,
+         'change every review',
+         'update public.forecast_reviews set verdict = ''too_few''',
+         '0 rows changed'),
+        ('2 logged in, not a member', 'authenticated', outsider,
+         'delete every review',
+         'delete from public.forecast_reviews',
+         '0 rows changed'),
+        ('2 logged in, not a member', 'authenticated', outsider,
+         'change covers',
+         'update public.covers set covers = 99',
+         'no access'),
+        ('2 logged in, not a member', 'authenticated', outsider,
+         'change rosters',
+         'update public.rosters set planned_count = 99',
+         'no access'),
 
         ('3 member of another restaurant', 'authenticated', member_b,
          'add an override for restaurant A',
@@ -175,14 +220,38 @@ begin
          'delete restaurant A''s override',
          format('delete from public.forecast_overrides where restaurant_id = %L', rest_a),
          '0 rows changed'),
+        ('3 member of another restaurant', 'authenticated', member_b,
+         'add a review for restaurant A',
+         format('insert into public.forecast_reviews (restaurant_id, date, verdict) values (%L, ''2099-02-01'', ''right'')', rest_a),
+         'blocked by row level security'),
+        ('3 member of another restaurant', 'authenticated', member_b,
+         'change restaurant A''s review',
+         format('update public.forecast_reviews set verdict = ''too_few'' where restaurant_id = %L', rest_a),
+         '0 rows changed'),
+        ('3 member of another restaurant', 'authenticated', member_b,
+         'move their own review to restaurant A',
+         format('update public.forecast_reviews set restaurant_id = %L, date = ''2099-03-01'' where restaurant_id = %L', rest_a, rest_b),
+         'blocked by row level security'),
+        ('3 member of another restaurant', 'authenticated', member_b,
+         'delete restaurant A''s review',
+         format('delete from public.forecast_reviews where restaurant_id = %L', rest_a),
+         '0 rows changed'),
+        ('3 member of another restaurant', 'authenticated', member_b,
+         'change restaurant A''s covers',
+         format('update public.covers set covers = 99 where restaurant_id = %L', rest_a),
+         'no access'),
+        ('3 member of another restaurant', 'authenticated', member_b,
+         'change restaurant A''s rosters',
+         format('update public.rosters set planned_count = 99 where restaurant_id = %L', rest_a),
+         'no access'),
 
         ('4 member (control)', 'authenticated', member_a,
          'add an override for their own restaurant (pretending to be someone else)',
-         format('insert into public.forecast_overrides (restaurant_id, date, servers, cooks, updated_by) values (%L, ''2099-02-01'', 3, 2, %L)', rest_a, member_b),
+         format('insert into public.forecast_overrides (restaurant_id, date, servers, bar_staff, runners, food_staff, cooks, updated_by) values (%L, ''2099-02-01'', 3, 1, 2, 2, 4, %L)', rest_a, member_b),
          '1 row changed'),
         ('4 member (control)', 'authenticated', member_a,
          'change that override, but only if the database recorded the real user',
-         format('update public.forecast_overrides set servers = 4 where restaurant_id = %L and date = ''2099-02-01'' and updated_by = %L', rest_a, member_a),
+         format('update public.forecast_overrides set servers = 4, runners = 3 where restaurant_id = %L and date = ''2099-02-01'' and updated_by = %L', rest_a, member_a),
          '1 row changed'),
         ('4 member (control)', 'authenticated', member_a,
          'delete that override',
@@ -194,16 +263,44 @@ begin
          'no access'),
         ('4 member (control)', 'authenticated', member_a,
          'change staffing rules',
-         'update public.staffing_rules set min_staff = 0',
+         'update public.staffing_rules set servers = 0',
          'no access'),
         ('4 member (control)', 'authenticated', member_a,
          'add a member to their own restaurant',
          format('insert into public.restaurant_members (user_id, restaurant_id) values (%L, %L)', outsider, rest_a),
          'no access'),
+        ('4 member (control)', 'authenticated', member_a,
+         'add a review for their own restaurant (pretending to be someone else)',
+         format('insert into public.forecast_reviews (restaurant_id, date, actual_guests, verdict, note, reviewed_by) values (%L, ''2099-02-01'', 150, ''too_many'', ''quiet evening'', %L)', rest_a, member_b),
+         '1 row changed'),
+        ('4 member (control)', 'authenticated', member_a,
+         'change that review, but only if the database recorded the real user',
+         format('update public.forecast_reviews set verdict = ''right'' where restaurant_id = %L and date = ''2099-02-01'' and reviewed_by = %L', rest_a, member_a),
+         '1 row changed'),
+        ('4 member (control)', 'authenticated', member_a,
+         'delete that review',
+         format('delete from public.forecast_reviews where restaurant_id = %L and date = ''2099-02-01''', rest_a),
+         '1 row changed'),
+        ('4 member (control)', 'authenticated', member_a,
+         'change their own covers',
+         format('update public.covers set covers = 99 where restaurant_id = %L', rest_a),
+         'no access'),
+        ('4 member (control)', 'authenticated', member_a,
+         'add covers for their own restaurant',
+         format('insert into public.covers (restaurant_id, period_start, period_end, channel, covers, bookings, no_shows, cancellations, late_cancellations) values (%L, ''2099-02-01'', ''2099-02-01'', ''Offline'', 1, 1, 0, 0, 0)', rest_a),
+         'no access'),
+        ('4 member (control)', 'authenticated', member_a,
+         'change their own rosters',
+         format('update public.rosters set planned_count = 99 where restaurant_id = %L', rest_a),
+         'no access'),
+        ('4 member (control)', 'authenticated', member_a,
+         'add a roster row for their own restaurant',
+         format('insert into public.rosters (restaurant_id, date, role, planned_count) values (%L, ''2099-02-01'', ''cooks'', 4)', rest_a),
+         'no access'),
 
         ('5 nightly job (secret key)', 'service_role', null::uuid,
          'write a forecast',
-         format('insert into public.forecasts (restaurant_id, date, predicted_guests, servers, cooks, model) values (%L, ''2099-01-01'', 20, 2, 1, ''lock-test'') on conflict (restaurant_id, date, shift) do update set predicted_guests = excluded.predicted_guests', rest_a),
+         format('insert into public.forecasts (restaurant_id, date, predicted_guests, servers, bar_staff, runners, food_staff, cooks, model) values (%L, ''2099-01-01'', 20, 2, 1, 1, 1, 4, ''lock-test'') on conflict (restaurant_id, date, shift) do update set predicted_guests = excluded.predicted_guests, bar_staff = excluded.bar_staff', rest_a),
          '1 row changed'),
         ('5 nightly job (secret key)', 'service_role', null::uuid,
          'write weather',
@@ -231,7 +328,35 @@ begin
          'no access'),
         ('5 nightly job (secret key)', 'service_role', null::uuid,
          'change staffing rules',
-         'update public.staffing_rules set min_staff = 0',
+         'update public.staffing_rules set servers = 0',
+         'no access'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'write covers (the covers importer)',
+         format('insert into public.covers (restaurant_id, period_start, period_end, service, channel, offer, covers, bookings, no_shows, cancellations, late_cancellations) values (%L, ''2099-01-01'', ''2099-01-31'', ''Di-zo'', ''Offline'', '''', 12, 5, 0, 1, 0) on conflict (restaurant_id, period_start, period_end, service, channel, offer) do update set covers = excluded.covers, bookings = excluded.bookings', rest_a),
+         '1 row changed'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'delete covers',
+         format('delete from public.covers where restaurant_id = %L', rest_a),
+         '1 row changed'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'write a roster row (the roster importer)',
+         format('insert into public.rosters (restaurant_id, date, role, planned_count) values (%L, ''2099-01-01'', ''servers'', 4) on conflict (restaurant_id, date, shift, role) do update set planned_count = excluded.planned_count', rest_a),
+         '1 row changed'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'delete rosters',
+         format('delete from public.rosters where restaurant_id = %L', rest_a),
+         '1 row changed'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'change a manager''s review',
+         'update public.forecast_reviews set verdict = ''right''',
+         'no access'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'add a review',
+         format('insert into public.forecast_reviews (restaurant_id, date, verdict) values (%L, ''2099-04-01'', ''right'')', rest_a),
+         'no access'),
+        ('5 nightly job (secret key)', 'service_role', null::uuid,
+         'delete reviews',
+         'delete from public.forecast_reviews',
          'no access')
       ) as s (who, db_role, user_id, attempt, statement, expected)
     loop
