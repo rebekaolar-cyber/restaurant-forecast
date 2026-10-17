@@ -57,7 +57,7 @@ comment on column public.covers.no_shows is 'Bookings whose guests never came.';
 comment on column public.covers.cancellations is 'Bookings that were cancelled.';
 comment on column public.covers.late_cancellations is 'Bookings cancelled shortly before the visit.';
 comment on column public.covers.source is 'Which system the row came from. thefork for TheFork exports.';
-comment on column public.covers.imported_at is 'When the importer wrote the row.';
+comment on column public.covers.imported_at is 'When the importer first wrote the row. A repeat import leaves it alone.';
 
 -- ---------------------------------------------------------------------------------------------
 -- 2. rosters: the manager's planned staff per role per evening, counts only
@@ -81,7 +81,7 @@ comment on column public.rosters.role is
   'Same words as the forecasts columns: servers (W floor), bar_staff (B bar), runners (R runner), food_staff (F food), cooks (kitchen).';
 comment on column public.rosters.planned_count is 'How many people were planned for this role that evening.';
 comment on column public.rosters.source is 'Where the row came from: manual for a hand-made file.';
-comment on column public.rosters.imported_at is 'When the importer wrote the row.';
+comment on column public.rosters.imported_at is 'When the importer first wrote the row. A repeat import leaves it alone.';
 
 -- ---------------------------------------------------------------------------------------------
 -- 3. forecast_reviews: the manager's end-of-day verdict on a forecast
