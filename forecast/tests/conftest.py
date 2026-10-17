@@ -13,6 +13,7 @@ import shutil
 import subprocess
 import tempfile
 from collections.abc import Sequence
+from datetime import date
 from pathlib import Path
 
 import pytest
@@ -23,6 +24,9 @@ REPO = Path(__file__).resolve().parents[2]
 SAMPLES = Path(__file__).resolve().parent / "samples"
 SEEDED_RESTAURANT = "35f0d253-0e43-4e2f-8c23-d52b4ca159f7"
 PORT = 54330
+# The tests fix the clock at the night of 10 October 2026. The seed writes its 14 placeholder
+# forecasts from the real today, so the owner fixture moves them to start on this day instead.
+SEED_TODAY = date(2026, 10, 10)
 
 
 WEATHER_CSV = SAMPLES / "daily_weather_2024-10-09_to_2026-10-23.csv"
@@ -272,6 +276,15 @@ def owner(local_postgres):
         )
         # Back to the starting rows: the seed puts the 14 placeholder forecasts in again.
         connection.execute((REPO / "supabase" / "seed.sql").read_text(encoding="utf-8"))
+        # The seed starts them on the real today; the tests live on SEED_TODAY. Shift the
+        # placeholders so they cover SEED_TODAY and the 13 days after it, whatever the real date.
+        # In two steps, so no row ever lands on a date another placeholder still holds.
+        first = connection.execute("select min(date) from public.forecasts where model = 'placeholder'").fetchone()[0]
+        connection.execute("update public.forecasts set date = date + 36500 where model = 'placeholder'")
+        connection.execute(
+            "update public.forecasts set date = date - 36500 + %s where model = 'placeholder'",
+            [(SEED_TODAY - first).days],
+        )
         yield connection
 
 
