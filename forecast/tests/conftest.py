@@ -272,7 +272,8 @@ def owner(local_postgres):
 
     with psycopg.connect(local_postgres, autocommit=True) as connection:
         connection.execute(
-            "truncate public.daily_weather, public.bookings, public.receipts, public.forecast_overrides, public.forecasts"
+            "truncate public.daily_weather, public.bookings, public.receipts, public.forecast_overrides, public.forecasts, "
+            "public.covers, public.rosters, public.forecast_reviews"
         )
         # Back to the starting rows: the seed puts the 14 placeholder forecasts in again.
         connection.execute((REPO / "supabase" / "seed.sql").read_text(encoding="utf-8"))

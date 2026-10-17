@@ -1,0 +1,13 @@
+restaurantName,period,service,channel,offer,covers,bookings,no shows,cancellations,late cancellations
+Restaurant Habibi,2026-08-10,Di-zo,Restaurant widgets,0,38,13,1,2,0
+Restaurant Habibi,2026-08-10,Di-zo,Offline,0,85,27,0,0,0
+Restaurant Habibi,2026-08-10,Di-zo,TheFork Network,0,14,5,0,1,0
+Restaurant Habibi,2026-08-10,Maandag vanaf 10 augustus,Offline,0,22,8,0,0,0
+Restaurant Habibi,2026-08-17,Di-zo,Restaurant widgets,0,41,14,0,3,1
+Restaurant Habibi,2026-08-17,Di-zo,Offline,0,79,25,0,0,0
+Restaurant Habibi,2026-08-17,Di-zo,TripAdvisor,0,3,1,0,0,0
+Restaurant Habibi,2026-08-17,Maandag vanaf 10 augustus,Offline,0,18,6,0,0,0
+Restaurant Habibi,2026-08-31,Di-zo,Restaurant widgets,0,36,12,2,1,0
+Restaurant Habibi,2026-08-31,Di-zo,Offline,0,90,29,0,0,0
+Restaurant Habibi,2026-08-31,Di-zo,TheFork Partners,0,4,2,0,0,0
+Restaurant Habibi,2026-08-31,Maandag vanaf 10 augustus,Offline,0,25,9,1,0,0
