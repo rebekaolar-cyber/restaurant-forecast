@@ -84,6 +84,13 @@ Every table has `restaurant_id` (in `restaurants` it is the `id` column).
   food_staff, cooks, model, created_at)`, one row per restaurant, date and shift
 - `forecast_overrides(restaurant_id, date, shift, servers, bar_staff, runners, food_staff, cooks,
   note, updated_by, updated_at)`
+- `covers(restaurant_id, period_start, period_end, service, channel, offer, covers, bookings,
+  no_shows, cancellations, late_cancellations, source, imported_at)`, TheFork's aggregate
+  export, one row per restaurant, period, service, channel and offer
+- `rosters(restaurant_id, date, shift, role, planned_count, source, imported_at)`, the manager's
+  planned staff per role per evening, counts only, one row per restaurant, date, shift and role
+- `forecast_reviews(restaurant_id, date, shift, role, actual_guests, verdict, note, reviewed_by,
+  reviewed_at)`, the manager's end-of-day verdict, one row per restaurant, date, shift and role
 
 The server writes `forecasts`. The dashboard reads `forecasts` and `daily_weather` and writes
 `forecast_overrides`. **Nothing else crosses between the two halves.** If the contract has to
@@ -99,6 +106,26 @@ renamed or removed:
   row per guest level. The dashboard does not read it.
 - The old rule table still exists as `staffing_rules_retired`, closed to everyone. It is used by
   nothing. Deleting it needs Rebeka's own confirmation in the Supabase connector.
+
+Contract change of 17 Oct 2026 (migration `20261017193218`), phase 1 of "real data in": the
+tables that let real, non-personal numbers replace the fake history. It only adds; nothing the
+dashboard used was renamed or removed:
+
+- New tables `covers`, `rosters` and `forecast_reviews` (columns above).
+- The dashboard may read `covers`, `rosters` and `forecast_reviews`, and writes
+  `forecast_reviews` exactly as it writes `forecast_overrides`: a member inserts, updates and
+  deletes their own restaurant's rows, and the database fills `reviewed_by` and `reviewed_at`.
+- The nightly job writes `covers` and `rosters` through the two importers
+  (`forecast/import_covers.py`, `forecast/import_rosters.py`) and only reads
+  `forecast_reviews`. It has no right to write a review.
+- `rosters.role` and `forecast_reviews.role` use the same words as the `forecasts` columns:
+  `servers`, `bar_staff`, `runners`, `food_staff`, `cooks`; `forecast_reviews.role` also knows
+  `all` (the evening as a whole, where `actual_guests` belongs). `verdict` is `right`,
+  `too_many` or `too_few`. `shift` is `dinner`.
+- `covers`: a per-day row has `period_start = period_end`, a weekly row starts on a Monday and
+  ends on the Sunday, a monthly row starts on the 1st and ends on the last day of the month.
+  `service`, `channel` and `offer` are TheFork's labels as exported; `''` means empty or, for
+  `offer`, no offer. `covers` means guests booked.
 
 Details the contract leaves open, as built in `supabase/migrations/`:
 
@@ -141,6 +168,11 @@ How the lock is built (keep it this way when adding tables):
 - Nobody but the nightly job (secret key) can touch `bookings` and `receipts`.
 - The nightly job can read `forecast_overrides` but has no right to write it, so it can never
   overwrite a manager's override.
+- Logged-in members read `covers` and `rosters` (own restaurant only) and cannot write them;
+  the nightly job (the importers) reads and writes them.
+- `forecast_reviews` is locked like `forecast_overrides`: members read and write their own
+  restaurant's rows, the database stamps `reviewed_by` and `reviewed_at`, and the nightly job
+  can only read.
 - `staffing_rules_retired` is closed to everyone, the nightly job included.
 - New tables get no rights automatically. Every new table needs RLS, policies and explicit grants
   in its migration, and a matching check in `supabase/tests/rls_lock.sql`.
@@ -202,6 +234,20 @@ Run everything from the repo root. `pip install -r forecast/requirements-dev.txt
   `.json`. A test fails if the saved report is not what the code produces.
 - `python -m forecast.nightly --fake-feed` is the nightly job: weather, fake bookings, forecast,
   in that order. It stops at the first failing step and exits with an error.
+- `python -m forecast.import_covers FILE [FILE ...]` loads TheFork's "evolution of covers" CSV
+  export (Reports > Evolution of covers > export) into `covers`. The header must be exactly
+  `restaurantName,period,service,channel,offer,covers,bookings,no shows,cancellations,late
+  cancellations`; any other file is refused, which is the guard against exports that carry
+  guest names. The period size is read from the dates (`--period day|week|month` overrides it;
+  a file with one row dated the 1st looks like a month). Safe to run again. `--sql` prints the
+  insert-or-update statements instead of writing, with no file name in them, so a real export
+  can be loaded through the Supabase connector without the file entering the repo.
+- `python -m forecast.import_rosters FILE` loads our own roster file, header exactly
+  `date,role,planned_count` (optionally `,source`), counts only, into `rosters`. `role` is one
+  of the five words or the roster letter (W B R F K). With more than one restaurant in the
+  database, `--restaurant NAME` says which. Safe to run again. `--sql` as above.
+- Both importers check the whole file first and write nothing if any row is wrong. Neither is
+  part of the nightly job: they are run by hand when a new export is there.
 - **Days ahead** are counted as the nightly job writes them: day 1 is the evening of the day the
   job runs (it runs in the night), day 14 is thirteen days later.
 - The backtest numbers are on fake history. The fake evenings sit about 30% below the manager's
