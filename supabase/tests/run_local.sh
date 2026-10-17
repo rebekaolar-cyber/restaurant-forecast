@@ -73,9 +73,12 @@ echo "== the lock test left nothing behind"
 left="$(run_sql -At -c "select (select count(*) from public.restaurants) || ' restaurant, '
   || (select count(*) from public.forecasts) || ' forecasts, '
   || (select count(*) from public.forecast_overrides) || ' overrides, '
+  || (select count(*) from public.covers) || ' covers, '
+  || (select count(*) from public.rosters) || ' rosters, '
+  || (select count(*) from public.forecast_reviews) || ' reviews, '
   || (select count(*) from auth.users) || ' users'")"
 echo "$left"
-if [ "$left" != "1 restaurant, 14 forecasts, 0 overrides, 0 users" ]; then
+if [ "$left" != "1 restaurant, 14 forecasts, 0 overrides, 0 covers, 0 rosters, 0 reviews, 0 users" ]; then
   echo "FAIL: the lock test changed the data" >&2
   exit 1
 fi
