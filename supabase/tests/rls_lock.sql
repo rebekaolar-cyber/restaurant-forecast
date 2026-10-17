@@ -19,9 +19,10 @@ declare
   outsider  uuid := gen_random_uuid();
   tables    text[] := array[
     'restaurants', 'restaurant_members', 'staffing_rules', 'daily_weather',
-    'bookings', 'receipts', 'forecasts', 'forecast_overrides'
+    'bookings', 'receipts', 'forecasts', 'forecast_overrides', 'staffing_rules_retired'
   ];
   job_only  text[] := array['bookings', 'receipts'];
+  retired   text[] := array['staffing_rules_retired'];  -- set aside, closed to everyone
   persona   record;
   step      record;
   t         text;
@@ -57,8 +58,8 @@ begin
     insert into public.restaurant_members (user_id, restaurant_id)
     values (member_a, rest_a), (member_b, rest_b);
 
-    insert into public.staffing_rules (restaurant_id, role, guests_per_staff, min_staff)
-    values (rest_a, 'server', 20, 1), (rest_b, 'server', 20, 1);
+    insert into public.staffing_rules (restaurant_id, guests_from, servers, bar_staff, runners, food_staff, cooks)
+    values (rest_a, 100, 3, 1, 1, 2, 4), (rest_b, 100, 3, 1, 1, 2, 4);
 
     insert into public.daily_weather (restaurant_id, date, temp_max)
     values (rest_a, '2099-01-01', 10), (rest_b, '2099-01-01', 10);
@@ -69,11 +70,11 @@ begin
     insert into public.receipts (restaurant_id, opened_at, guests, total)
     values (rest_a, now(), 2, 50), (rest_b, now(), 2, 50);
 
-    insert into public.forecasts (restaurant_id, date, predicted_guests, servers, cooks, model)
-    values (rest_a, '2099-01-01', 10, 1, 1, 'lock-test'), (rest_b, '2099-01-01', 10, 1, 1, 'lock-test');
+    insert into public.forecasts (restaurant_id, date, predicted_guests, servers, bar_staff, runners, food_staff, cooks, model)
+    values (rest_a, '2099-01-01', 10, 1, 1, 1, 1, 1, 'lock-test'), (rest_b, '2099-01-01', 10, 1, 1, 1, 1, 1, 'lock-test');
 
-    insert into public.forecast_overrides (restaurant_id, date, servers, cooks)
-    values (rest_a, '2099-01-01', 1, 1), (rest_b, '2099-01-01', 1, 1);
+    insert into public.forecast_overrides (restaurant_id, date, servers, bar_staff, runners, food_staff, cooks)
+    values (rest_a, '2099-01-01', 1, 1, 1, 1, 1), (rest_b, '2099-01-01', 1, 1, 1, 1, 1);
 
     -- ---------------------------------------------------------------------------------------
     -- Part 1: what can each visitor READ, in every table?
@@ -97,6 +98,7 @@ begin
         expected := case
           when persona.db_role = 'anon' then 'no access'
           when t = any (job_only)       then 'no access'
+          when t = any (retired)        then 'no access'
           when persona.home is null     then '0 rows'
           else '1 row, own restaurant only'
         end;
@@ -178,11 +180,11 @@ begin
 
         ('4 member (control)', 'authenticated', member_a,
          'add an override for their own restaurant (pretending to be someone else)',
-         format('insert into public.forecast_overrides (restaurant_id, date, servers, cooks, updated_by) values (%L, ''2099-02-01'', 3, 2, %L)', rest_a, member_b),
+         format('insert into public.forecast_overrides (restaurant_id, date, servers, bar_staff, runners, food_staff, cooks, updated_by) values (%L, ''2099-02-01'', 3, 1, 2, 2, 4, %L)', rest_a, member_b),
          '1 row changed'),
         ('4 member (control)', 'authenticated', member_a,
          'change that override, but only if the database recorded the real user',
-         format('update public.forecast_overrides set servers = 4 where restaurant_id = %L and date = ''2099-02-01'' and updated_by = %L', rest_a, member_a),
+         format('update public.forecast_overrides set servers = 4, runners = 3 where restaurant_id = %L and date = ''2099-02-01'' and updated_by = %L', rest_a, member_a),
          '1 row changed'),
         ('4 member (control)', 'authenticated', member_a,
          'delete that override',
@@ -194,7 +196,7 @@ begin
          'no access'),
         ('4 member (control)', 'authenticated', member_a,
          'change staffing rules',
-         'update public.staffing_rules set min_staff = 0',
+         'update public.staffing_rules set servers = 0',
          'no access'),
         ('4 member (control)', 'authenticated', member_a,
          'add a member to their own restaurant',
@@ -203,7 +205,7 @@ begin
 
         ('5 nightly job (secret key)', 'service_role', null::uuid,
          'write a forecast',
-         format('insert into public.forecasts (restaurant_id, date, predicted_guests, servers, cooks, model) values (%L, ''2099-01-01'', 20, 2, 1, ''lock-test'') on conflict (restaurant_id, date, shift) do update set predicted_guests = excluded.predicted_guests', rest_a),
+         format('insert into public.forecasts (restaurant_id, date, predicted_guests, servers, bar_staff, runners, food_staff, cooks, model) values (%L, ''2099-01-01'', 20, 2, 1, 1, 1, 4, ''lock-test'') on conflict (restaurant_id, date, shift) do update set predicted_guests = excluded.predicted_guests, bar_staff = excluded.bar_staff', rest_a),
          '1 row changed'),
         ('5 nightly job (secret key)', 'service_role', null::uuid,
          'write weather',
@@ -231,7 +233,7 @@ begin
          'no access'),
         ('5 nightly job (secret key)', 'service_role', null::uuid,
          'change staffing rules',
-         'update public.staffing_rules set min_staff = 0',
+         'update public.staffing_rules set servers = 0',
          'no access')
       ) as s (who, db_role, user_id, attempt, statement, expected)
     loop

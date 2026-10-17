@@ -1,5 +1,5 @@
 """A small client for the Supabase web API. It does only what the nightly job needs:
-read rows, count rows, and insert-or-update rows.
+read rows, count rows, insert-or-update rows, and delete rows that match a condition.
 
 It talks to the database over HTTPS with the secret key. What that key may touch is decided by
 the rights in supabase/migrations/, not here.
@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Sequence
-from datetime import date
+from datetime import date, datetime, timezone
 from typing import Any, Protocol
 
 import requests
@@ -31,19 +31,27 @@ class DatabaseError(RuntimeError):
 
 
 class Database(Protocol):
-    """The three things the forecast code may ask of a database."""
+    """The few things the forecast code may ask of a database."""
 
-    def select(self, table: str, columns: str, filters: Sequence[Filter] = (), *, order: str) -> list[dict]: ...
+    def select(
+        self, table: str, columns: str, filters: Sequence[Filter] = (), *, order: str, limit: int | None = None
+    ) -> list[dict]: ...
 
     def count(self, table: str, filters: Sequence[Filter] = ()) -> int: ...
 
     def upsert(self, table: str, rows: Sequence[dict], *, on_conflict: Sequence[str]) -> None: ...
+
+    def delete(self, table: str, filters: Sequence[Filter]) -> None: ...
 
 
 def as_text(value: Any) -> str:
     """Writes a value the way the web API expects it in a condition."""
     if isinstance(value, bool):
         return "true" if value else "false"
+    if isinstance(value, datetime):  # a moment in time: always sent as UTC
+        if value.tzinfo is None:
+            raise ValueError("A time without a timezone cannot be compared safely")
+        return value.astimezone(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     if isinstance(value, date):
         return value.isoformat()
     return str(value)
@@ -90,16 +98,23 @@ class RestDatabase:
         if not secret_key.startswith("sb_") and key_role(secret_key) == "secret":
             self._headers["Authorization"] = f"Bearer {secret_key}"
 
-    def select(self, table: str, columns: str, filters: Sequence[Filter] = (), *, order: str) -> list[dict]:
-        """All matching rows, fetched page by page. `order` keeps the pages stable."""
+    def select(
+        self, table: str, columns: str, filters: Sequence[Filter] = (), *, order: str, limit: int | None = None
+    ) -> list[dict]:
+        """Matching rows, fetched page by page. `order` keeps the pages stable.
+
+        `order` is a column name, or several separated by commas; add ".desc" to a name to start
+        with the largest. `limit` stops after that many rows; without it, all rows are returned.
+        """
         check_filters(filters)
         rows: list[dict] = []
         while True:
-            params = [("select", columns), ("order", order), ("limit", str(PAGE_SIZE)), ("offset", str(len(rows)))]
+            wanted = PAGE_SIZE if limit is None else min(PAGE_SIZE, limit - len(rows))
+            params = [("select", columns), ("order", order), ("limit", str(wanted)), ("offset", str(len(rows)))]
             params += self._conditions(filters)
             page = self._request("GET", table, params=params).json()
             rows.extend(page)
-            if len(page) < PAGE_SIZE:
+            if len(page) < wanted or len(page) < PAGE_SIZE or (limit is not None and len(rows) >= limit):
                 return rows
 
     def count(self, table: str, filters: Sequence[Filter] = ()) -> int:
@@ -127,6 +142,14 @@ class RestDatabase:
                 headers={"Prefer": "resolution=merge-duplicates,return=minimal"},
                 json=list(rows[start : start + CHUNK_SIZE]),
             )
+
+    def delete(self, table: str, filters: Sequence[Filter]) -> None:
+        """Deletes the rows that match. A condition is required, so "delete everything" cannot
+        happen by leaving something out."""
+        check_filters(filters)
+        if not filters:
+            raise ValueError("delete needs at least one condition")
+        self._request("DELETE", table, params=self._conditions(filters), headers={"Prefer": "return=minimal"})
 
     @staticmethod
     def _conditions(filters: Sequence[Filter]) -> list[tuple[str, str]]:
